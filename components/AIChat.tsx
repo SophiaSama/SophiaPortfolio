@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { MessageSquare, X, Send, Sparkles, Loader2 } from 'lucide-react';
+import { MessageSquare, X, Send, Sparkles, Loader2, Mail, Check } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { sendMessageToGemini, generateSystemInstruction } from '../services/geminiService';
 import { ChatMessage } from '../types';
@@ -18,7 +18,11 @@ const AIChat: React.FC = () => {
       timestamp: new Date()
     }
   ]);
-  
+  const [showEmailPrompt, setShowEmailPrompt] = useState(false);
+  const [email, setEmail] = useState('');
+  const [isEmailSent, setIsEmailSent] = useState(false);
+  const [isSubmittingEmail, setIsSubmittingEmail] = useState(false);
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -48,9 +52,16 @@ const AIChat: React.FC = () => {
       const contextData = rawMarkdown ? { ...data, rawResume: rawMarkdown } : data;
       const systemInstruction = generateSystemInstruction(contextData as any);
       const responseText = await sendMessageToGemini(userMsg.text, systemInstruction);
+
+      let processedText = responseText;
+      if (responseText.startsWith('DELEGATE_TO_EMAIL:')) {
+        processedText = responseText.replace('DELEGATE_TO_EMAIL:', '').trim();
+        setShowEmailPrompt(true);
+      }
+
       const botMsg: ChatMessage = {
         role: 'model',
-        text: responseText,
+        text: processedText,
         timestamp: new Date()
       };
       setMessages(prev => [...prev, botMsg]);
@@ -58,6 +69,31 @@ const AIChat: React.FC = () => {
       console.error(error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleEmailSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim() || isSubmittingEmail) return;
+
+    setIsSubmittingEmail(true);
+    try {
+      // In a real app, you'd call an API here. Let's simulate a delegation.
+      console.log('Delegating question to Sophia:', { email, lastMessage: messages[messages.length - 2]?.text });
+
+      // Artificial delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      setIsEmailSent(true);
+      setTimeout(() => {
+        setShowEmailPrompt(false);
+        setIsEmailSent(false);
+        setEmail('');
+      }, 3000);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsSubmittingEmail(false);
     }
   };
 
@@ -72,7 +108,7 @@ const AIChat: React.FC = () => {
               <Sparkles className="text-white" size={18} />
               <h3 className="font-semibold text-white">AI Career Assistant</h3>
             </div>
-            <button 
+            <button
               onClick={() => setIsOpen(false)}
               className="text-white/80 hover:text-white transition-colors"
             >
@@ -83,16 +119,15 @@ const AIChat: React.FC = () => {
           {/* Messages */}
           <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-900/50">
             {messages.map((msg, idx) => (
-              <div 
-                key={idx} 
+              <div
+                key={idx}
                 className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
-                <div 
-                  className={`max-w-[85%] p-3 rounded-2xl text-sm leading-relaxed ${
-                    msg.role === 'user' 
-                      ? 'bg-indigo-600 text-white rounded-tr-none' 
+                <div
+                  className={`max-w-[85%] p-3 rounded-2xl text-sm leading-relaxed ${msg.role === 'user'
+                      ? 'bg-indigo-600 text-white rounded-tr-none'
                       : 'bg-slate-800 text-slate-200 border border-slate-700 rounded-tl-none'
-                  }`}
+                    }`}
                 >
                   <div className="prose-chat">
                     <ReactMarkdown>{msg.text}</ReactMarkdown>
@@ -105,6 +140,46 @@ const AIChat: React.FC = () => {
                 <div className="bg-slate-800 p-3 rounded-2xl rounded-tl-none border border-slate-700">
                   <Loader2 size={16} className="animate-spin text-indigo-400" />
                 </div>
+              </div>
+            )}
+
+            {showEmailPrompt && (
+              <div className="animate-in fade-in zoom-in duration-300">
+                {!isEmailSent ? (
+                  <div className="bg-indigo-600/10 border border-indigo-500/20 rounded-2xl p-4 mt-2">
+                    <div className="flex items-center gap-2 mb-3 text-indigo-400">
+                      <Mail size={16} />
+                      <span className="text-xs font-bold uppercase tracking-wider">Leave your email for Ruiping</span>
+                    </div>
+                    <form onSubmit={handleEmailSubmit} className="space-y-3">
+                      <input
+                        type="email"
+                        required
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="your@email.com"
+                        className="w-full bg-slate-950 border border-slate-700 rounded-lg py-2 px-3 text-sm text-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                      />
+                      <button
+                        type="submit"
+                        disabled={isSubmittingEmail}
+                        className="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-2 rounded-lg transition-colors flex items-center justify-center gap-2"
+                      >
+                        {isSubmittingEmail ? <Loader2 size={14} className="animate-spin" /> : 'Delegate to Ruiping'}
+                      </button>
+                    </form>
+                  </div>
+                ) : (
+                  <div className="bg-green-500/10 border border-green-500/20 rounded-2xl p-4 mt-2 flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center text-green-500">
+                      <Check size={18} />
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold text-white">Message Sent!</p>
+                      <p className="text-[10px] text-slate-400">Ruiping will get back to you soon.</p>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
             <div ref={messagesEndRef} />
@@ -120,9 +195,9 @@ const AIChat: React.FC = () => {
                 placeholder="Ask about Ruiping's projects..."
                 className="w-full bg-slate-800 text-white placeholder-slate-500 border border-slate-700 rounded-xl py-3 pl-4 pr-12 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               />
-              <button 
+              <button
                 type="submit"
-                disabled={isLoading || !input.trim()}
+                disabled={isLoading || !input.trim() || showEmailPrompt}
                 className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 <Send size={16} />

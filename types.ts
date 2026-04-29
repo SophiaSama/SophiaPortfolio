@@ -15,6 +15,7 @@ export interface WorkExperience {
   role: string;
   period: string;
   description: string;
+  location: string;
   tech: string;
 }
 
@@ -36,6 +37,10 @@ export interface PortfolioData {
   education: Education[];
   certifications: string[];
   skills: string[];
+  skillCategories: {
+    category: string;
+    items: string[];
+  }[];
 }
 
 export interface ChatMessage {

@@ -31,8 +31,8 @@ export const PortfolioProvider: React.FC<{ children: ReactNode }> = ({ children 
     const loadRemoteData = async () => {
       const supabaseUrl = (process as any).env.SUPABASE_URL;
       const supabaseKey = (process as any).env.SUPABASE_ANON_KEY;
-      const bucketName = (process as any).env.SUPABASE_STORAGE_BUCKET || 'documents';
-      const filePath = (process as any).env.SUPABASE_FILE_PATH || 'SophiaCareer/resume.md';
+      const bucketName = (process as any).env.SUPABASE_STORAGE_BUCKET || 'SophiaCareer';
+      const filePath = (process as any).env.SUPABASE_FILE_PATH || 'resume.md';
 
       if (!supabaseUrl || !supabaseKey) {
         console.info("Supabase credentials not found. Using default local data.");

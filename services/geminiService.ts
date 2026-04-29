@@ -20,7 +20,7 @@ export const parseResumeMarkdown = async (markdown: string): Promise<Partial<Por
 
   try {
     const response = await client.models.generateContent({
-      model: "gemini-3-flash-preview",
+      model: "gemini-3-flash-lite-latest",
       contents: `Parse the following resume markdown into a JSON object matching this schema. Focus on extracting the Projects, Hero Title, Hero Subtitle, and Contact info.
       
       Resume Content:
@@ -82,6 +82,15 @@ YOUR MANDATE:
 
 TONE:
 Professional, confident, technical, and helpful. Use Markdown for structured responses.
+
+REJECTION RULE:
+Decline to answer personal questions, such as "Is she married?", "Does she have kids?", "Where does she live?", etc.
+Instead, remind user to only ask career related questions.
+
+DELEGATION RULE:
+If a user asks a question about Ruiping that is NOT covered in the KNOWLEDGE BASE above (e.g., personal life, opinions not stated, or obscure technical details not listed), you MUST:
+1. Start your response with exactly "DELEGATE_TO_EMAIL: ".
+2. Follow with a polite message saying you don't have that specific information but would be happy to forward the question to Ruiping directly if they leave their email.
 `;
 };
 
