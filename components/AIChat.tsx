@@ -2,7 +2,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { MessageSquare, X, Send, Sparkles, Loader2, Mail, Check } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
-import { sendMessageToGemini, generateSystemInstruction } from '../services/geminiService';
+import { sendMessageToGemini, generateSystemInstruction, sendToolResponse } from '../services/geminiService';
 import { ChatMessage } from '../types';
 import { usePortfolio } from '../contexts/PortfolioContext';
 
@@ -48,23 +48,40 @@ const AIChat: React.FC = () => {
     setIsLoading(true);
 
     try {
-      // Use rawMarkdown for better AI context if available, otherwise fallback to structured JSON
       const contextData = rawMarkdown ? { ...data, rawResume: rawMarkdown } : data;
       const systemInstruction = generateSystemInstruction(contextData as any);
-      const responseText = await sendMessageToGemini(userMsg.text, systemInstruction);
+      const response = await sendMessageToGemini(userMsg.text, systemInstruction);
 
-      let processedText = responseText;
-      if (responseText.startsWith('DELEGATE_TO_EMAIL:')) {
-        processedText = responseText.replace('DELEGATE_TO_EMAIL:', '').trim();
-        setShowEmailPrompt(true);
+      if (response.functionCall && response.functionCall.name === 'delegate_to_owner') {
+        const { user_email, user_name, question, conversation_summary } = response.functionCall.args;
+
+        const botMsg: ChatMessage = {
+          role: 'model',
+          text: response.text || "One moment, I'm forwarding your request to Ruiping...",
+          timestamp: new Date()
+        };
+        setMessages(prev => [...prev, botMsg]);
+
+        // Execute the delegation
+        const toolResult = await handleDelegation(user_email, user_name, question, conversation_summary);
+
+        // Send tool response back to Gemini for the second turn
+        const finalResponse = await sendToolResponse(response.functionCall.id, toolResult);
+
+        const finalBotMsg: ChatMessage = {
+          role: 'model',
+          text: finalResponse.text,
+          timestamp: new Date()
+        };
+        setMessages(prev => [...prev, finalBotMsg]);
+      } else {
+        const botMsg: ChatMessage = {
+          role: 'model',
+          text: response.text,
+          timestamp: new Date()
+        };
+        setMessages(prev => [...prev, botMsg]);
       }
-
-      const botMsg: ChatMessage = {
-        role: 'model',
-        text: processedText,
-        timestamp: new Date()
-      };
-      setMessages(prev => [...prev, botMsg]);
     } catch (error) {
       console.error(error);
     } finally {
@@ -72,26 +89,32 @@ const AIChat: React.FC = () => {
     }
   };
 
-  const handleEmailSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email.trim() || isSubmittingEmail) return;
-
+  const handleDelegation = async (senderEmail: string, senderName: string, content: string, summary: string) => {
     setIsSubmittingEmail(true);
     try {
-      // In a real app, you'd call an API here. Let's simulate a delegation.
-      console.log('Delegating question to Sophia:', { email, lastMessage: messages[messages.length - 2]?.text });
+      const response = await fetch(`https://formsubmit.co/ajax/${data.email}`, {
+        method: "POST",
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          name: "Career AI Assistant",
+          _subject: `New Career Inquiry from ${senderName} (${senderEmail})`,
+          message: `NEW INQUIRY\n\nNAME: ${senderName}\nEMAIL: ${senderEmail}\n\nQUESTION:\n${content}\n\nCONVERSATION SUMMARY:\n${summary}`,
+          reply_to: senderEmail,
+        })
+      });
 
-      // Artificial delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      setIsEmailSent(true);
-      setTimeout(() => {
-        setShowEmailPrompt(false);
-        setIsEmailSent(false);
-        setEmail('');
-      }, 3000);
+      if (response.ok) {
+        setIsEmailSent(true);
+        setTimeout(() => setIsEmailSent(false), 5000);
+        return { success: true, details: "The email was successfully sent to Ruiping." };
+      }
+      return { success: false, error: "Failed to send email via FormSubmit." };
     } catch (error) {
-      console.error(error);
+      console.error("Failed to send delegation email:", error);
+      return { success: false, error: "Network error during email delegation." };
     } finally {
       setIsSubmittingEmail(false);
     }
@@ -125,8 +148,8 @@ const AIChat: React.FC = () => {
               >
                 <div
                   className={`max-w-[85%] p-3 rounded-2xl text-sm leading-relaxed ${msg.role === 'user'
-                      ? 'bg-indigo-600 text-white rounded-tr-none'
-                      : 'bg-slate-800 text-slate-200 border border-slate-700 rounded-tl-none'
+                    ? 'bg-indigo-600 text-white rounded-tr-none'
+                    : 'bg-slate-800 text-slate-200 border border-slate-700 rounded-tl-none'
                     }`}
                 >
                   <div className="prose-chat">
@@ -143,45 +166,6 @@ const AIChat: React.FC = () => {
               </div>
             )}
 
-            {showEmailPrompt && (
-              <div className="animate-in fade-in zoom-in duration-300">
-                {!isEmailSent ? (
-                  <div className="bg-indigo-600/10 border border-indigo-500/20 rounded-2xl p-4 mt-2">
-                    <div className="flex items-center gap-2 mb-3 text-indigo-400">
-                      <Mail size={16} />
-                      <span className="text-xs font-bold uppercase tracking-wider">Leave your email for Ruiping</span>
-                    </div>
-                    <form onSubmit={handleEmailSubmit} className="space-y-3">
-                      <input
-                        type="email"
-                        required
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder="your@email.com"
-                        className="w-full bg-slate-950 border border-slate-700 rounded-lg py-2 px-3 text-sm text-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                      />
-                      <button
-                        type="submit"
-                        disabled={isSubmittingEmail}
-                        className="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-2 rounded-lg transition-colors flex items-center justify-center gap-2"
-                      >
-                        {isSubmittingEmail ? <Loader2 size={14} className="animate-spin" /> : 'Delegate to Ruiping'}
-                      </button>
-                    </form>
-                  </div>
-                ) : (
-                  <div className="bg-green-500/10 border border-green-500/20 rounded-2xl p-4 mt-2 flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center text-green-500">
-                      <Check size={18} />
-                    </div>
-                    <div>
-                      <p className="text-xs font-bold text-white">Message Sent!</p>
-                      <p className="text-[10px] text-slate-400">Ruiping will get back to you soon.</p>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
             <div ref={messagesEndRef} />
           </div>
 
