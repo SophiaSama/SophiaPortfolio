@@ -2,7 +2,7 @@ import { PortfolioData } from '../types';
 
 export const DEFAULT_PORTFOLIO_DATA: PortfolioData = {
   // ── Hero ──────────────────────────────────────────────────────────────────
-  heroTitle: "AI/ML Engineer & System Architect",
+  heroTitle: "System Architect",
   heroSubtitle:
     "13+ years building robust systems — from automotive embedded software to cloud-native AI. " +
     "Now shipping production LLM applications and exploring the frontier of intelligent systems.",

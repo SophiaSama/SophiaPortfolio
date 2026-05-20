@@ -1,8 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Menu, X, Code2 } from 'lucide-react';
+import { Menu, X, CircuitBoard, Moon, Sun } from 'lucide-react';
 import { usePortfolio } from '../contexts/PortfolioContext';
 
-const Header: React.FC = () => {
+interface HeaderProps {
+  theme: 'dark' | 'light';
+  onToggleTheme: () => void;
+}
+
+const Header: React.FC<HeaderProps> = ({ theme, onToggleTheme }) => {
   const { data } = usePortfolio();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -17,74 +22,94 @@ const Header: React.FC = () => {
 
   const navLinks = [
     { name: 'Projects', href: '#projects' },
+    { name: 'Experience', href: '#experience' },
     { name: 'Contact', href: '#contact' },
   ];
 
   return (
-    <header 
-      className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
-        isScrolled ? 'bg-slate-950/80 backdrop-blur-md border-b border-slate-800 py-4' : 'bg-transparent py-6'
-      }`}
+    <header
+      className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${isScrolled ? 'bg-[var(--ink)]/90 backdrop-blur-md border-b border-[var(--line)] py-3' : 'bg-transparent py-5'
+        }`}
     >
       <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
         {/* Logo */}
         <a href="#" className="flex items-center gap-2 group">
-          <div className="bg-indigo-600 p-2 rounded-lg group-hover:rotate-12 transition-transform">
-            <Code2 size={24} className="text-white" />
+          <div className="border border-[var(--copper)]/50 bg-[var(--panel-soft)] p-2 rounded-md group-hover:border-[var(--paper)]/40 transition-colors">
+            <CircuitBoard size={22} className="text-[var(--copper)]" />
           </div>
-          <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">
-            Ruiping.dev
+          <span className="text-lg font-semibold text-[var(--paper)] tracking-tight">
+            Ruiping Wang
           </span>
         </a>
 
         {/* Desktop Nav */}
         <nav className="hidden md:flex items-center gap-8">
           {navLinks.map((link) => (
-            <a 
-              key={link.name} 
+            <a
+              key={link.name}
               href={link.href}
-              className="text-sm font-medium text-slate-400 hover:text-indigo-400 transition-colors"
+              className="text-sm font-medium text-[var(--muted)] hover:text-[var(--paper)] transition-colors"
             >
               {link.name}
             </a>
           ))}
-          <a 
+          <a
             href={data.linkedinUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="px-5 py-2 bg-slate-800 hover:bg-slate-700 text-white text-sm font-medium rounded-full border border-slate-700 transition-all"
+            className="px-5 py-2 bg-[var(--paper)] hover:opacity-90 text-[var(--ink)] text-sm font-semibold rounded-md border border-[var(--paper)] transition-all"
           >
-            Full Resume (LinkedIn)
+            LinkedIn
           </a>
+          <button
+            type="button"
+            onClick={onToggleTheme}
+            className="inline-flex h-10 w-10 items-center justify-center rounded-md border border-[var(--line)] bg-[var(--panel)] text-[var(--paper)] hover:border-[var(--copper)]/60 hover:text-[var(--copper)] transition-colors"
+            aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+            title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+          >
+            {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+          </button>
         </nav>
 
         {/* Mobile Menu Button */}
-        <button 
-          className="md:hidden text-white"
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-        >
-          {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-        </button>
+        <div className="md:hidden flex items-center gap-3">
+          <button
+            type="button"
+            onClick={onToggleTheme}
+            className="inline-flex h-10 w-10 items-center justify-center rounded-md border border-[var(--line)] bg-[var(--panel)] text-[var(--paper)]"
+            aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+          >
+            {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+          </button>
+          <button
+            className="text-[var(--paper)]"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            aria-label="Toggle navigation menu"
+          >
+            {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+        </div>
       </div>
 
       {/* Mobile Menu */}
       {isMobileMenuOpen && (
-        <div className="md:hidden absolute top-full left-0 right-0 bg-slate-900 border-b border-slate-800 p-6 flex flex-col gap-4 shadow-xl">
-           {navLinks.map((link) => (
-            <a 
-              key={link.name} 
+        <div className="md:hidden absolute top-full left-0 right-0 bg-[var(--panel)] border-b border-[var(--line)] p-6 flex flex-col gap-4 shadow-xl">
+          {navLinks.map((link) => (
+            <a
+              key={link.name}
               href={link.href}
-              className="text-base font-medium text-slate-300 hover:text-indigo-400"
+              className="text-base font-medium text-[var(--body)] hover:text-[var(--paper)]"
               onClick={() => setIsMobileMenuOpen(false)}
             >
               {link.name}
             </a>
           ))}
-          <a 
+          <a
             href={data.linkedinUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-base font-medium text-indigo-400"
+            className="text-base font-medium text-[var(--copper)]"
             onClick={() => setIsMobileMenuOpen(false)}
           >
             View LinkedIn Resume

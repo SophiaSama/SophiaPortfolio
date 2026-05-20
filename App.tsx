@@ -1,17 +1,27 @@
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Header from './components/Header';
 import Hero from './components/Hero';
+import Experience from './components/Experience';
 import { ProjectCard } from './components/ProjectCard';
 import AIChat from './components/AIChat';
-import SecurityCheck from './components/SecurityCheck';
 import { Mail, Linkedin, MapPin, Copy, Check, ExternalLink, Loader2, Rocket, AlertTriangle, UserCheck, Shield, Cpu } from 'lucide-react';
 import { PortfolioProvider, usePortfolio } from './contexts/PortfolioContext';
 
 const PortfolioContent: React.FC = () => {
   const { data, isLoading, error } = usePortfolio();
   const [copied, setCopied] = useState(false);
-  const [isVerified, setIsVerified] = useState(false);
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
+    if (typeof window === 'undefined') return 'dark';
+    const storedTheme = window.localStorage.getItem('portfolio-theme');
+    if (storedTheme === 'dark' || storedTheme === 'light') return storedTheme;
+    return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+  });
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    window.localStorage.setItem('portfolio-theme', theme);
+  }, [theme]);
 
   const handleCopyEmail = () => {
     navigator.clipboard.writeText(data.email);
@@ -19,29 +29,29 @@ const PortfolioContent: React.FC = () => {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  if (!isVerified) {
-    return <SecurityCheck onVerify={() => setIsVerified(true)} />;
-  }
+  const handleToggleTheme = () => {
+    setTheme((currentTheme) => currentTheme === 'dark' ? 'light' : 'dark');
+  };
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4 text-indigo-400">
+      <div className="min-h-screen bg-[var(--ink)] flex items-center justify-center transition-colors duration-300">
+        <div className="flex flex-col items-center gap-4 text-[var(--copper)]">
           <Loader2 size={48} className="animate-spin" />
-          <p className="text-slate-400 font-medium text-lg tracking-wide">Secure Connection Established. Fetching data...</p>
+          <p className="text-[var(--muted)] font-medium text-lg tracking-wide">Loading portfolio data...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-200 animate-in fade-in duration-1000">
-      <Header />
-      
+    <div className="min-h-screen bg-[var(--ink)] text-[var(--paper)] animate-in fade-in duration-1000 transition-colors">
+      <Header theme={theme} onToggleTheme={handleToggleTheme} />
+
       <main>
         {error && (
-          <div className="bg-amber-500/10 border-b border-amber-500/20 py-3 px-6 flex justify-center items-center gap-3 text-amber-200 text-xs md:text-sm animate-in fade-in duration-500">
-            <AlertTriangle size={16} className="text-amber-500 shrink-0" />
+          <div className="bg-[var(--copper)]/10 border-b border-[var(--copper)]/20 py-3 px-6 flex justify-center items-center gap-3 text-[var(--paper)] text-xs md:text-sm animate-in fade-in duration-500">
+            <AlertTriangle size={16} className="text-[var(--copper)] shrink-0" />
             <span className="font-medium">Connectivity Notice: Serving static fallback. Secure remote details could not be reached.</span>
           </div>
         )}
@@ -49,62 +59,64 @@ const PortfolioContent: React.FC = () => {
         <Hero />
 
         {/* LinkedIn Embed / Profile Section */}
-        <section className="py-12 px-6">
+        <section className="py-20 px-6 bg-[var(--band)] border-y border-[var(--line)]">
           <div className="max-w-7xl mx-auto">
-            <div className="bg-gradient-to-br from-slate-900 to-slate-950 border border-slate-800 rounded-3xl p-8 md:p-12 relative overflow-hidden group">
-              <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
-                <Linkedin size={200} />
-              </div>
-              
-              <div className="relative z-10 flex flex-col lg:flex-row items-center gap-12">
+            <div className="relative">
+              <div className="relative z-10 grid lg:grid-cols-[1.4fr_0.8fr] items-stretch gap-10">
                 <div className="flex-1 space-y-6">
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-bold uppercase tracking-widest">
+                  <div className="inline-flex items-center gap-2 border border-[var(--line)] bg-[var(--panel)] px-3 py-1.5 rounded-md text-[var(--copper)] text-xs font-bold uppercase tracking-widest">
                     <UserCheck size={14} /> Professional Identity
                   </div>
-                  <h2 className="text-3xl md:text-4xl font-bold text-white tracking-tight">
-                    Verified Professional Profile
+                  <h2 className="text-3xl md:text-5xl font-fraunces font-bold text-[var(--paper)] tracking-tight max-w-3xl">
+                    Systems architecture, test discipline, and applied AI in one engineering track.
                   </h2>
-                  <p className="text-slate-400 text-lg leading-relaxed max-w-2xl">
-                    I maintain an active professional presence on LinkedIn. Connect with me to view my full career trajectory, endorsements, educational background, and professional network within the automotive systems ecosystem.
+                  <p className="text-[var(--body-muted)] text-lg leading-relaxed max-w-3xl">
+                    My background spans automotive validation, embedded software quality, MBSE-driven system design, and production LLM applications. LinkedIn carries the full career timeline; this site focuses on the engineering judgment behind the work.
                   </p>
-                  <div className="flex flex-wrap gap-4 pt-4">
-                    <a 
+                  <div className="flex flex-wrap gap-4 pt-2">
+                    <a
                       href={data.linkedinUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-3 bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-4 rounded-xl font-bold transition-all hover:scale-105 shadow-xl shadow-indigo-600/20"
+                      className="inline-flex items-center gap-3 bg-[var(--paper)] hover:opacity-90 text-[var(--ink)] px-7 py-4 rounded-md font-bold transition-all"
                     >
-                      <Linkedin size={20} /> View Full Career History
+                      <Linkedin size={20} /> View Career Timeline
                     </a>
-                    <div className="flex items-center gap-2 text-slate-500 text-sm font-medium">
-                      <Shield size={16} className="text-green-500" />
-                      <span>Verified Industry Professional</span>
+                    <div className="flex items-center gap-2 text-[var(--subtle)] text-sm font-medium">
+                      <Shield size={16} className="text-[var(--teal)]" />
+                      <span>Automotive systems · Singapore</span>
                     </div>
                   </div>
                 </div>
 
-                {/* Simulated LinkedIn Profile Card */}
-                <div className="w-full lg:w-96 bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-2xl transform lg:rotate-2 hover:rotate-0 transition-transform duration-500">
-                  <div className="h-24 bg-gradient-to-r from-indigo-600 to-violet-600"></div>
-                  <div className="px-6 pb-8 -mt-12 text-center">
-                    <div className="inline-block p-1 bg-slate-950 rounded-full mb-4">
-                       <div className="w-24 h-24 rounded-full bg-slate-800 border-4 border-slate-950 flex items-center justify-center text-slate-500 overflow-hidden">
-                          <Linkedin size={48} className="opacity-20" />
-                       </div>
+                <div className="bg-[var(--panel)] border border-[var(--line)] rounded-lg p-6 md:p-8">
+                  <div className="flex items-start justify-between gap-6 border-b border-[var(--line)] pb-6">
+                    <div>
+                      <p className="text-xs uppercase tracking-[0.24em] text-[var(--subtle)] mb-2">Current Focus</p>
+                      <h3 className="text-2xl font-fraunces font-bold text-[var(--paper)]">Secure access systems</h3>
                     </div>
-                    <h3 className="text-xl font-bold text-white">Ruiping Wang</h3>
-                    <p className="text-slate-400 text-sm mt-1 mb-4">System Architect | Automotive Security | Connectivity Expert</p>
-                    <div className="flex justify-center gap-2 mb-6">
-                      <span className="px-3 py-1 bg-slate-800 rounded-full text-[10px] font-bold text-indigo-400 uppercase tracking-tighter">Singapore</span>
-                      <span className="px-3 py-1 bg-slate-800 rounded-full text-[10px] font-bold text-indigo-400 uppercase tracking-tighter">NTU Alumna</span>
+                    <Linkedin className="text-[var(--copper)]" size={28} />
+                  </div>
+                  <div className="divide-y divide-[var(--line)]">
+                    <div className="py-5">
+                      <p className="text-sm text-[var(--subtle)]">Architecture</p>
+                      <p className="text-[var(--paper)] font-medium">CCC/MFi/Google-aligned digital key flows</p>
                     </div>
-                    <a 
+                    <div className="py-5">
+                      <p className="text-sm text-[var(--subtle)]">Connectivity</p>
+                      <p className="text-[var(--paper)] font-medium">UWB, BLE, NFC, cloud backends</p>
+                    </div>
+                    <div className="py-5">
+                      <p className="text-sm text-[var(--subtle)]">Applied AI</p>
+                      <p className="text-[var(--paper)] font-medium">LLM tools for engineering workflows</p>
+                    </div>
+                    <a
                       href={data.linkedinUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="block w-full py-2 bg-transparent border border-indigo-500 text-indigo-400 hover:bg-indigo-500 hover:text-white rounded-full text-sm font-bold transition-colors"
+                      className="inline-flex items-center gap-2 pt-5 text-[var(--copper)] hover:text-[var(--paper)] text-sm font-bold transition-colors"
                     >
-                      Connect on LinkedIn
+                      Open LinkedIn <ExternalLink size={16} />
                     </a>
                   </div>
                 </div>
@@ -114,24 +126,24 @@ const PortfolioContent: React.FC = () => {
         </section>
 
         {/* Projects Section */}
-        <section id="projects" className="py-24 px-6 bg-slate-900/30 scroll-mt-28">
+        <section id="projects" className="py-24 px-6 bg-[var(--ink)] scroll-mt-28">
           <div className="max-w-7xl mx-auto">
             <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
               <div className="max-w-2xl">
-                <div className="flex items-center gap-3 mb-4 text-indigo-400">
+                <div className="flex items-center gap-3 mb-4 text-[var(--copper)]">
                   <Cpu size={24} />
                   <span className="font-mono text-sm tracking-widest uppercase">System Implementations</span>
                 </div>
-                <h2 className="text-3xl md:text-5xl font-bold text-white mb-6 tracking-tight">Technical Showcases</h2>
-                <p className="text-slate-400 text-lg">
-                  Specialized engineering explorations in secure automotive connectivity and digital key protocols.
+                <h2 className="text-3xl md:text-5xl font-fraunces font-bold text-[var(--paper)] mb-6 tracking-tight">Selected Technical Work</h2>
+                <p className="text-[var(--body-muted)] text-lg">
+                  Production-minded explorations across AI tooling, evaluation safety, and secure automotive connectivity.
                 </p>
               </div>
-              <a 
-                href="https://github.com/SophiaSama" 
-                target="_blank" 
+              <a
+                href="https://github.com/SophiaSama"
+                target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 text-indigo-400 hover:text-indigo-300 font-medium transition-colors group px-6 py-3 bg-indigo-500/10 rounded-xl border border-indigo-500/20"
+                className="inline-flex items-center gap-2 text-[var(--paper)] hover:text-[var(--copper)] font-medium transition-colors group px-6 py-3 bg-[var(--panel)] rounded-md border border-[var(--line)]"
               >
                 Global Repositories <ExternalLink size={18} />
               </a>
@@ -139,17 +151,17 @@ const PortfolioContent: React.FC = () => {
 
             <div className="grid md:grid-cols-1 lg:grid-cols-2 gap-10">
               {data.projects.map((project) => (
-                <div key={project.id} className={project.id === 'carkeydemo' ? 'lg:col-span-1 shadow-2xl shadow-indigo-500/5' : ''}>
+                <div key={project.id}>
                   <ProjectCard project={project} />
                 </div>
               ))}
-              
-              <div className="group relative bg-slate-900/20 border border-slate-800 border-dashed rounded-3xl flex flex-col items-center justify-center p-12 hover:border-slate-700 transition-all duration-500 min-h-[400px]">
-                <div className="w-20 h-20 rounded-2xl bg-slate-800/50 flex items-center justify-center mb-6 group-hover:rotate-6 transition-transform">
-                  <Rocket size={40} className="text-indigo-400" />
+
+              <div className="group relative bg-[var(--panel)]/60 border border-[var(--line)] border-dashed rounded-lg flex flex-col items-center justify-center p-12 hover:border-[var(--copper)]/50 transition-all duration-500 min-h-[400px]">
+                <div className="w-20 h-20 rounded-md bg-[var(--panel-soft)] border border-[var(--line)] flex items-center justify-center mb-6 group-hover:-translate-y-1 transition-transform">
+                  <Rocket size={38} className="text-[var(--copper)]" />
                 </div>
-                <h3 className="text-2xl font-bold text-slate-300 mb-3 text-center">Next Frontier: UWB Security</h3>
-                <p className="text-slate-500 text-center max-w-sm leading-relaxed">
+                <h3 className="text-2xl font-fraunces font-bold text-[var(--paper)] mb-3 text-center">Next Frontier: UWB Security</h3>
+                <p className="text-[var(--subtle)] text-center max-w-sm leading-relaxed">
                   Currently prototyping ultra-wideband (UWB) ranging security and multi-layered authentication for next-gen vehicle access.
                 </p>
               </div>
@@ -157,45 +169,47 @@ const PortfolioContent: React.FC = () => {
           </div>
         </section>
 
-        <section id="contact" className="py-32 px-6 border-t border-slate-900 bg-slate-950 scroll-mt-28">
+        <Experience />
+
+        <section id="contact" className="py-32 px-6 border-t border-[var(--line)] bg-[var(--band)] scroll-mt-28">
           <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-4xl font-bold text-white mb-8 tracking-tight">Let's Interface</h2>
-            <p className="text-slate-400 mb-12 text-lg max-w-2xl mx-auto">
+            <h2 className="text-4xl font-fraunces font-bold text-[var(--paper)] mb-8 tracking-tight">Let’s Talk Systems</h2>
+            <p className="text-[var(--body-muted)] mb-12 text-lg max-w-2xl mx-auto">
               I am open to discussions regarding System Architecture roles and automotive security research collaborations.
             </p>
-            
+
             <div className="flex flex-col md:flex-row justify-center items-center gap-6">
-              <div className="w-full sm:w-auto flex items-center justify-center bg-slate-900 border border-slate-800 pl-6 pr-4 py-5 rounded-2xl hover:bg-slate-800 hover:border-indigo-500/50 transition-all group relative">
+              <div className="w-full sm:w-auto flex items-center justify-center bg-[var(--panel)] border border-[var(--line)] pl-6 pr-4 py-5 rounded-md hover:bg-[var(--panel-soft)] hover:border-[var(--copper)]/50 transition-all group relative">
                 <a href={`mailto:${data.email}`} className="flex items-center gap-3 mr-3 hover:opacity-80 transition-opacity">
-                  <Mail className="text-indigo-400 group-hover:scale-110 transition-transform" />
-                  <span className="text-slate-200 font-medium">{data.email}</span>
+                  <Mail className="text-[var(--copper)] group-hover:scale-110 transition-transform" />
+                  <span className="text-[var(--paper)] font-medium">{data.email}</span>
                 </a>
-                <div className="w-px h-6 bg-slate-700 mx-1"></div>
-                <button 
+                <div className="w-px h-6 bg-[var(--line)] mx-1"></div>
+                <button
                   onClick={handleCopyEmail}
-                  className="p-2 ml-1 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-all relative"
+                  className="p-2 ml-1 text-[var(--muted)] hover:text-[var(--paper)] hover:bg-[var(--panel-hover)] rounded-md transition-all relative"
                 >
-                  {copied ? <Check size={18} className="text-green-400" /> : <Copy size={18} />}
+                  {copied ? <Check size={18} className="text-[var(--teal)]" /> : <Copy size={18} />}
                 </button>
               </div>
 
-              <a 
+              <a
                 href={data.linkedinUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full sm:w-auto flex items-center justify-center gap-3 bg-slate-900 border border-slate-800 px-8 py-5 rounded-2xl hover:bg-slate-800 hover:border-indigo-500/50 transition-all group"
+                className="w-full sm:w-auto flex items-center justify-center gap-3 bg-[var(--panel)] border border-[var(--line)] px-8 py-5 rounded-md hover:bg-[var(--panel-soft)] hover:border-[var(--copper)]/50 transition-all group"
               >
-                <Linkedin className="text-indigo-400 group-hover:scale-110 transition-transform" />
-                <span className="text-slate-200 font-medium">LinkedIn Network</span>
+                <Linkedin className="text-[var(--copper)] group-hover:scale-110 transition-transform" />
+                <span className="text-[var(--paper)] font-medium">LinkedIn Network</span>
               </a>
             </div>
 
-            <div className="mt-20 flex flex-col items-center gap-4 text-slate-600">
+            <div className="mt-20 flex flex-col items-center gap-4 text-[var(--faint)]">
               <div className="flex items-center gap-2 text-sm font-medium">
-                <MapPin size={16} className="text-slate-500" />
+                <MapPin size={16} className="text-[var(--subtle)]" />
                 <span>{data.location}</span>
               </div>
-              <footer className="text-slate-700 text-xs mt-4">
+              <footer className="text-[var(--faint)] text-xs mt-4">
                 <p>&copy; {new Date().getFullYear()} Ruiping Wang. System Architect Portfolio.</p>
               </footer>
             </div>

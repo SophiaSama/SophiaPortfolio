@@ -124,32 +124,32 @@ const AIChat: React.FC = () => {
     <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
       {/* Chat Window */}
       {isOpen && (
-        <div className="mb-4 w-[350px] sm:w-[400px] h-[500px] bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-5 duration-300">
+        <div className="mb-4 w-[350px] sm:w-[400px] h-[500px] bg-[var(--panel)]/96 backdrop-blur-2xl border border-[var(--line)] rounded-lg shadow-[0_30px_60px_rgba(0,0,0,0.5)] flex flex-col overflow-hidden animate-in slide-in-from-bottom-8 duration-500 ease-out">
           {/* Header */}
-          <div className="bg-indigo-600 p-4 flex justify-between items-center">
-            <div className="flex items-center gap-2">
-              <Sparkles className="text-white" size={18} />
-              <h3 className="font-semibold text-white">AI Career Assistant</h3>
+          <div className="bg-[var(--panel-soft)] border-b border-[var(--line)] p-4 flex justify-between items-center relative overflow-hidden">
+            <div className="flex items-center gap-2 relative z-10">
+              <Sparkles className="text-[var(--copper)]" size={18} />
+              <h3 className="font-semibold text-[var(--paper)] tracking-wide text-sm uppercase">Portfolio Assistant</h3>
             </div>
             <button
               onClick={() => setIsOpen(false)}
-              className="text-white/80 hover:text-white transition-colors"
+              className="text-[var(--body-muted)] hover:text-[var(--paper)] transition-colors"
             >
               <X size={20} />
             </button>
           </div>
 
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-900/50">
+          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-transparent">
             {messages.map((msg, idx) => (
               <div
                 key={idx}
                 className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
                 <div
-                  className={`max-w-[85%] p-3 rounded-2xl text-sm leading-relaxed ${msg.role === 'user'
-                    ? 'bg-indigo-600 text-white rounded-tr-none'
-                    : 'bg-slate-800 text-slate-200 border border-slate-700 rounded-tl-none'
+                  className={`max-w-[85%] p-3.5 rounded-2xl text-[15px] leading-relaxed shadow-sm ${msg.role === 'user'
+                    ? 'bg-[var(--panel-hover)] text-[var(--paper)] border border-[var(--copper)]/25 rounded-tr-sm'
+                    : 'bg-[var(--panel-soft)] text-[var(--body)] border border-[var(--line)] rounded-tl-sm'
                     }`}
                 >
                   <div className="prose-chat">
@@ -160,8 +160,8 @@ const AIChat: React.FC = () => {
             ))}
             {isLoading && (
               <div className="flex justify-start">
-                <div className="bg-slate-800 p-3 rounded-2xl rounded-tl-none border border-slate-700">
-                  <Loader2 size={16} className="animate-spin text-indigo-400" />
+                <div className="bg-[var(--panel-soft)] p-3 rounded-2xl rounded-tl-sm border border-[var(--line)]">
+                  <Loader2 size={16} className="animate-spin text-[var(--copper)]" />
                 </div>
               </div>
             )}
@@ -170,19 +170,19 @@ const AIChat: React.FC = () => {
           </div>
 
           {/* Input */}
-          <form onSubmit={handleSubmit} className="p-4 bg-slate-900 border-t border-slate-800">
+          <form onSubmit={handleSubmit} className="p-4 bg-[var(--panel-soft)] border-t border-[var(--line)]">
             <div className="relative">
               <input
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 placeholder="Ask about Ruiping's projects..."
-                className="w-full bg-slate-800 text-white placeholder-slate-500 border border-slate-700 rounded-xl py-3 pl-4 pr-12 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className="w-full bg-[var(--ink)] text-[var(--paper)] placeholder-[var(--faint)] border border-[var(--line)] rounded-md py-3.5 pl-4 pr-12 focus:outline-none focus:ring-1 focus:ring-[var(--copper)]/50 focus:border-[var(--copper)]/50 transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.5)]"
               />
               <button
                 type="submit"
                 disabled={isLoading || !input.trim() || showEmailPrompt}
-                className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-[var(--panel-soft)] text-[var(--copper)] rounded-md hover:bg-[var(--panel-hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
               >
                 <Send size={16} />
               </button>
@@ -194,10 +194,10 @@ const AIChat: React.FC = () => {
       {/* Toggle Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`group flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white py-3 px-6 rounded-full shadow-lg shadow-indigo-600/20 transition-all duration-300 hover:scale-105 ${isOpen ? 'scale-0 opacity-0 hidden' : 'scale-100 opacity-100'}`}
+        className={`group flex items-center gap-2.5 bg-[var(--paper)] text-[var(--ink)] hover:opacity-90 py-3.5 px-6 rounded-md shadow-[0_12px_32px_rgba(0,0,0,0.35)] transition-all duration-500 hover:-translate-y-1 ${isOpen ? 'scale-0 opacity-0 hidden' : 'scale-100 opacity-100'}`}
       >
-        <MessageSquare size={20} />
-        <span className="font-medium">Ask AI about Ruiping</span>
+        <MessageSquare size={18} />
+        <span className="font-semibold tracking-wide text-sm">Ask About Ruiping</span>
       </button>
     </div>
   );
