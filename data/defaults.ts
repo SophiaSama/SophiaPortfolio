@@ -4,8 +4,8 @@ export const DEFAULT_PORTFOLIO_DATA: PortfolioData = {
   // ── Hero ──────────────────────────────────────────────────────────────────
   heroTitle: "System Architect",
   heroSubtitle:
-    "13+ years building robust systems — from automotive embedded software to cloud-native AI. " +
-    "Now shipping production LLM applications and exploring the frontier of intelligent systems.",
+    "13+ years building and testing robust systems — from automotive embedded software to cloud-native AI. " +
+    "Now building LLM applications to for productivity and exploring the frontier of intelligent systems.",
 
   // ── Contact ───────────────────────────────────────────────────────────────
   email: "wang.ruiping0720@gmail.com",

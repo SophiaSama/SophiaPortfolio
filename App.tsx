@@ -45,12 +45,12 @@ const PortfolioContent: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--ink)] text-[var(--paper)] animate-in fade-in duration-1000 transition-colors">
+    <div className="min-h-screen bg-[var(--ink)] text-[var(--paper)] transition-colors">
       <Header theme={theme} onToggleTheme={handleToggleTheme} />
 
       <main>
         {error && (
-          <div className="bg-[var(--copper)]/10 border-b border-[var(--copper)]/20 py-3 px-6 flex justify-center items-center gap-3 text-[var(--paper)] text-xs md:text-sm animate-in fade-in duration-500">
+          <div className="bg-[var(--copper)] text-[var(--ink)] py-3 px-6 flex justify-center items-center gap-3 text-xs md:text-sm font-bold uppercase tracking-widest">
             <AlertTriangle size={16} className="text-[var(--copper)] shrink-0" />
             <span className="font-medium">Connectivity Notice: Serving static fallback. Secure remote details could not be reached.</span>
           </div>
@@ -59,7 +59,7 @@ const PortfolioContent: React.FC = () => {
         <Hero />
 
         {/* LinkedIn Embed / Profile Section */}
-        <section className="py-20 px-6 bg-[var(--band)] border-y border-[var(--line)]">
+        <section className="py-24 px-6 bg-[var(--band)] border-y border-[var(--line)]">
           <div className="max-w-7xl mx-auto">
             <div className="relative">
               <div className="relative z-10 grid lg:grid-cols-[1.4fr_0.8fr] items-stretch gap-10">
@@ -78,7 +78,7 @@ const PortfolioContent: React.FC = () => {
                       href={data.linkedinUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-3 bg-[var(--paper)] hover:opacity-90 text-[var(--ink)] px-7 py-4 rounded-md font-bold transition-all"
+                      className="inline-flex items-center gap-3 bg-[var(--paper)] hover:bg-[var(--ink)] text-[var(--ink)] hover:text-[var(--paper)] border border-[var(--paper)] px-7 py-4 font-bold transition-all"
                     >
                       <Linkedin size={20} /> View Career Timeline
                     </a>
@@ -89,7 +89,7 @@ const PortfolioContent: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="bg-[var(--panel)] border border-[var(--line)] rounded-lg p-6 md:p-8">
+                <div className="bg-transparent border border-[var(--line)] p-6 md:p-8">
                   <div className="flex items-start justify-between gap-6 border-b border-[var(--line)] pb-6">
                     <div>
                       <p className="text-xs uppercase tracking-[0.24em] text-[var(--subtle)] mb-2">Current Focus</p>
@@ -143,7 +143,7 @@ const PortfolioContent: React.FC = () => {
                 href="https://github.com/SophiaSama"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 text-[var(--paper)] hover:text-[var(--copper)] font-medium transition-colors group px-6 py-3 bg-[var(--panel)] rounded-md border border-[var(--line)]"
+                className="inline-flex items-center gap-2 text-[var(--paper)] hover:bg-[var(--paper)] hover:text-[var(--ink)] font-bold transition-colors px-6 py-3 border border-[var(--paper)]"
               >
                 Global Repositories <ExternalLink size={18} />
               </a>
@@ -156,12 +156,9 @@ const PortfolioContent: React.FC = () => {
                 </div>
               ))}
 
-              <div className="group relative bg-[var(--panel)]/60 border border-[var(--line)] border-dashed rounded-lg flex flex-col items-center justify-center p-12 hover:border-[var(--copper)]/50 transition-all duration-500 min-h-[400px]">
-                <div className="w-20 h-20 rounded-md bg-[var(--panel-soft)] border border-[var(--line)] flex items-center justify-center mb-6 group-hover:-translate-y-1 transition-transform">
-                  <Rocket size={38} className="text-[var(--copper)]" />
-                </div>
-                <h3 className="text-2xl font-fraunces font-bold text-[var(--paper)] mb-3 text-center">Next Frontier: UWB Security</h3>
-                <p className="text-[var(--subtle)] text-center max-w-sm leading-relaxed">
+              <div className="group relative border border-[var(--line)] flex flex-col items-center justify-center p-12 hover:bg-[var(--paper)] hover:text-[var(--ink)] hover:border-[var(--paper)] transition-colors duration-300 min-h-[300px]">
+                <h3 className="text-2xl font-fraunces font-bold mb-3 text-center uppercase tracking-wider">Next Frontier:<br />UWB Security</h3>
+                <p className="text-sm font-medium text-center max-w-sm leading-relaxed">
                   Currently prototyping ultra-wideband (UWB) ranging security and multi-layered authentication for next-gen vehicle access.
                 </p>
               </div>
@@ -179,15 +176,15 @@ const PortfolioContent: React.FC = () => {
             </p>
 
             <div className="flex flex-col md:flex-row justify-center items-center gap-6">
-              <div className="w-full sm:w-auto flex items-center justify-center bg-[var(--panel)] border border-[var(--line)] pl-6 pr-4 py-5 rounded-md hover:bg-[var(--panel-soft)] hover:border-[var(--copper)]/50 transition-all group relative">
-                <a href={`mailto:${data.email}`} className="flex items-center gap-3 mr-3 hover:opacity-80 transition-opacity">
-                  <Mail className="text-[var(--copper)] group-hover:scale-110 transition-transform" />
-                  <span className="text-[var(--paper)] font-medium">{data.email}</span>
+              <div className="w-full sm:w-auto flex items-center justify-center border border-[var(--paper)] pl-6 pr-4 py-5 hover:bg-[var(--paper)] hover:text-[var(--ink)] transition-colors group">
+                <a href={`mailto:${data.email}`} className="flex items-center gap-3 mr-3">
+                  <Mail className="group-hover:text-[var(--ink)] transition-colors" />
+                  <span className="font-bold tracking-wide">{data.email}</span>
                 </a>
-                <div className="w-px h-6 bg-[var(--line)] mx-1"></div>
+                <div className="w-px h-6 bg-[var(--line)] mx-1 group-hover:bg-[var(--ink)]/30"></div>
                 <button
                   onClick={handleCopyEmail}
-                  className="p-2 ml-1 text-[var(--muted)] hover:text-[var(--paper)] hover:bg-[var(--panel-hover)] rounded-md transition-all relative"
+                  className="p-2 ml-1 hover:bg-[var(--ink)]/10 transition-colors relative"
                 >
                   {copied ? <Check size={18} className="text-[var(--teal)]" /> : <Copy size={18} />}
                 </button>
@@ -197,10 +194,10 @@ const PortfolioContent: React.FC = () => {
                 href={data.linkedinUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full sm:w-auto flex items-center justify-center gap-3 bg-[var(--panel)] border border-[var(--line)] px-8 py-5 rounded-md hover:bg-[var(--panel-soft)] hover:border-[var(--copper)]/50 transition-all group"
+                className="w-full sm:w-auto flex items-center justify-center gap-3 border border-[var(--paper)] px-8 py-5 hover:bg-[var(--paper)] hover:text-[var(--ink)] transition-colors group"
               >
-                <Linkedin className="text-[var(--copper)] group-hover:scale-110 transition-transform" />
-                <span className="text-[var(--paper)] font-medium">LinkedIn Network</span>
+                <Linkedin className="group-hover:text-[var(--ink)] transition-colors" />
+                <span className="font-bold tracking-wide">LinkedIn Network</span>
               </a>
             </div>
 

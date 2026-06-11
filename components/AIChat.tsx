@@ -1,10 +1,12 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { MessageSquare, X, Send, Sparkles, Loader2, Mail, Check } from 'lucide-react';
+import { MessageSquare, X, Send, Sparkles, Loader2 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { sendMessageToGemini, generateSystemInstruction, sendToolResponse } from '../services/geminiService';
 import { ChatMessage } from '../types';
 import { usePortfolio } from '../contexts/PortfolioContext';
+
+const EMAIL_SUBMISSION_TIMEOUT_MS = 15000;
 
 const AIChat: React.FC = () => {
   const { data, rawMarkdown } = usePortfolio();
@@ -18,9 +20,6 @@ const AIChat: React.FC = () => {
       timestamp: new Date()
     }
   ]);
-  const [showEmailPrompt, setShowEmailPrompt] = useState(false);
-  const [email, setEmail] = useState('');
-  const [isEmailSent, setIsEmailSent] = useState(false);
   const [isSubmittingEmail, setIsSubmittingEmail] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -65,6 +64,16 @@ const AIChat: React.FC = () => {
         // Execute the delegation
         const toolResult = await handleDelegation(user_email, user_name, question, conversation_summary);
 
+        if (!toolResult.success) {
+          const finalBotMsg: ChatMessage = {
+            role: 'model',
+            text: `I couldn't send the email automatically: ${toolResult.error} Please email Ruiping directly at ${data.email}.`,
+            timestamp: new Date()
+          };
+          setMessages(prev => [...prev, finalBotMsg]);
+          return;
+        }
+
         // Send tool response back to Gemini for the second turn
         const finalResponse = await sendToolResponse(response.functionCall.id, toolResult);
 
@@ -89,33 +98,61 @@ const AIChat: React.FC = () => {
     }
   };
 
-  const handleDelegation = async (senderEmail: string, senderName: string, content: string, summary: string) => {
+  const handleDelegation = async (senderEmail: string | undefined, senderName: string | undefined, content: string, summary: string) => {
+    const recipientEmail = data.email.trim();
+    const normalizedSenderEmail = senderEmail?.trim() || '';
+    const normalizedSenderName = senderName?.trim() || 'a visitor';
+
+    if (!recipientEmail || !normalizedSenderEmail) {
+      return { success: false, error: "Missing recipient or sender email address." };
+    }
+
     setIsSubmittingEmail(true);
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), EMAIL_SUBMISSION_TIMEOUT_MS);
+
     try {
-      const response = await fetch(`https://formsubmit.co/ajax/${data.email}`, {
+      const response = await fetch('/api/contact', {
         method: "POST",
+        signal: controller.signal,
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json'
         },
         body: JSON.stringify({
-          name: "Career AI Assistant",
-          _subject: `New Career Inquiry from ${senderName} (${senderEmail})`,
-          message: `NEW INQUIRY\n\nNAME: ${senderName}\nEMAIL: ${senderEmail}\n\nQUESTION:\n${content}\n\nCONVERSATION SUMMARY:\n${summary}`,
-          reply_to: senderEmail,
+          senderName: normalizedSenderName,
+          senderEmail: normalizedSenderEmail,
+          question: content,
+          summary,
         })
       });
 
-      if (response.ok) {
-        setIsEmailSent(true);
-        setTimeout(() => setIsEmailSent(false), 5000);
+      const responseText = await response.text();
+      let responseData: any = null;
+      try {
+        responseData = responseText ? JSON.parse(responseText) : null;
+      } catch {
+        responseData = null;
+      }
+
+      if (response.ok && responseData?.success !== false) {
         return { success: true, details: "The email was successfully sent to Ruiping." };
       }
-      return { success: false, error: "Failed to send email via FormSubmit." };
+
+      const providerMessage = responseData?.message || responseData?.error || responseText || response.statusText;
+      console.error("Email API rejected delegation email:", providerMessage);
+      return {
+        success: false,
+        error: `Email API rejected the message: ${providerMessage}`
+      };
     } catch (error) {
       console.error("Failed to send delegation email:", error);
+      if (error instanceof DOMException && error.name === 'AbortError') {
+        return { success: false, error: "Email service timed out." };
+      }
       return { success: false, error: "Network error during email delegation." };
     } finally {
+      window.clearTimeout(timeoutId);
       setIsSubmittingEmail(false);
     }
   };
@@ -124,16 +161,15 @@ const AIChat: React.FC = () => {
     <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
       {/* Chat Window */}
       {isOpen && (
-        <div className="mb-4 w-[350px] sm:w-[400px] h-[500px] bg-[var(--panel)]/96 backdrop-blur-2xl border border-[var(--line)] rounded-lg shadow-[0_30px_60px_rgba(0,0,0,0.5)] flex flex-col overflow-hidden animate-in slide-in-from-bottom-8 duration-500 ease-out">
+        <div className="mb-4 w-[350px] sm:w-[400px] h-[500px] bg-[var(--ink)] border border-[var(--paper)] flex flex-col overflow-hidden">
           {/* Header */}
-          <div className="bg-[var(--panel-soft)] border-b border-[var(--line)] p-4 flex justify-between items-center relative overflow-hidden">
-            <div className="flex items-center gap-2 relative z-10">
-              <Sparkles className="text-[var(--copper)]" size={18} />
-              <h3 className="font-semibold text-[var(--paper)] tracking-wide text-sm uppercase">Portfolio Assistant</h3>
+          <div className="bg-[var(--paper)] border-b border-[var(--paper)] p-4 flex justify-between items-center">
+            <div className="flex items-center gap-2">
+              <span className="font-bold tracking-[0.2em] text-[var(--ink)] text-xs uppercase">Terminal / Assistant</span>
             </div>
             <button
               onClick={() => setIsOpen(false)}
-              className="text-[var(--body-muted)] hover:text-[var(--paper)] transition-colors"
+              className="text-[var(--ink)] opacity-70 hover:opacity-100 transition-opacity"
             >
               <X size={20} />
             </button>
@@ -147,9 +183,9 @@ const AIChat: React.FC = () => {
                 className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
                 <div
-                  className={`max-w-[85%] p-3.5 rounded-2xl text-[15px] leading-relaxed shadow-sm ${msg.role === 'user'
-                    ? 'bg-[var(--panel-hover)] text-[var(--paper)] border border-[var(--copper)]/25 rounded-tr-sm'
-                    : 'bg-[var(--panel-soft)] text-[var(--body)] border border-[var(--line)] rounded-tl-sm'
+                  className={`max-w-[85%] p-3 text-[14px] leading-relaxed font-mono ${msg.role === 'user'
+                    ? 'bg-[var(--paper)] text-[var(--ink)]'
+                    : 'bg-transparent text-[var(--paper)] border border-[var(--paper)]'
                     }`}
                 >
                   <div className="prose-chat">
@@ -160,8 +196,8 @@ const AIChat: React.FC = () => {
             ))}
             {isLoading && (
               <div className="flex justify-start">
-                <div className="bg-[var(--panel-soft)] p-3 rounded-2xl rounded-tl-sm border border-[var(--line)]">
-                  <Loader2 size={16} className="animate-spin text-[var(--copper)]" />
+                <div className="p-3 border border-[var(--paper)]">
+                  <Loader2 size={16} className="animate-spin text-[var(--paper)]" />
                 </div>
               </div>
             )}
@@ -170,21 +206,21 @@ const AIChat: React.FC = () => {
           </div>
 
           {/* Input */}
-          <form onSubmit={handleSubmit} className="p-4 bg-[var(--panel-soft)] border-t border-[var(--line)]">
+          <form onSubmit={handleSubmit} className="p-4 border-t border-[var(--paper)] bg-[var(--ink)]">
             <div className="relative">
               <input
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="Ask about Ruiping's projects..."
-                className="w-full bg-[var(--ink)] text-[var(--paper)] placeholder-[var(--faint)] border border-[var(--line)] rounded-md py-3.5 pl-4 pr-12 focus:outline-none focus:ring-1 focus:ring-[var(--copper)]/50 focus:border-[var(--copper)]/50 transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.5)]"
+                placeholder="PROMPT >"
+                className="w-full bg-transparent text-[var(--paper)] placeholder-[var(--paper)]/40 border border-[var(--paper)] py-3 pl-4 pr-12 focus:outline-none focus:ring-0 font-mono text-sm"
               />
               <button
                 type="submit"
-                disabled={isLoading || !input.trim() || showEmailPrompt}
-                className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-[var(--panel-soft)] text-[var(--copper)] rounded-md hover:bg-[var(--panel-hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                disabled={isLoading || isSubmittingEmail || !input.trim()}
+                className="absolute right-0 top-0 bottom-0 px-4 bg-[var(--paper)] text-[var(--ink)] hover:opacity-80 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity font-bold uppercase text-xs tracking-wider"
               >
-                <Send size={16} />
+                Send
               </button>
             </div>
           </form>
@@ -194,10 +230,9 @@ const AIChat: React.FC = () => {
       {/* Toggle Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`group flex items-center gap-2.5 bg-[var(--paper)] text-[var(--ink)] hover:opacity-90 py-3.5 px-6 rounded-md shadow-[0_12px_32px_rgba(0,0,0,0.35)] transition-all duration-500 hover:-translate-y-1 ${isOpen ? 'scale-0 opacity-0 hidden' : 'scale-100 opacity-100'}`}
+        className={`group flex items-center gap-3 bg-[var(--ink)] text-[var(--paper)] border border-[var(--paper)] hover:bg-[var(--paper)] hover:text-[var(--ink)] py-3 px-6 transition-colors ${isOpen ? 'hidden' : 'block'}`}
       >
-        <MessageSquare size={18} />
-        <span className="font-semibold tracking-wide text-sm">Ask About Ruiping</span>
+        <span className="font-bold tracking-[0.2em] text-xs uppercase">Chat with Career Agent</span>
       </button>
     </div>
   );
