@@ -23,9 +23,9 @@ const Hero: React.FC = () => {
               Automotive Connectivity &bull; AI Systems
             </span>
           </div>
-          <h1 className="text-6xl md:text-8xl lg:text-9xl font-black font-fraunces leading-[0.9] tracking-tighter text-[var(--paper)] uppercase">
+          <h1 className="text-4xl md:text-5xl lg:text-7xl font-bold font-fraunces leading-tight tracking-tight text-[var(--paper)] uppercase">
             {data.heroTitle.split(',')[0]}
-            <span className="block text-4xl md:text-6xl lg:text-7xl font-light tracking-tight lowercase mt-4 italic opacity-80">
+            <span className="block text-2xl md:text-3xl lg:text-4xl font-light tracking-wide lowercase mt-2 italic opacity-80">
               secure systems.
             </span>
           </h1>
