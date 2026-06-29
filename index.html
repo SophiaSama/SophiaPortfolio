@@ -118,6 +118,56 @@
     .prose-chat li {
       margin-bottom: 0.25rem;
     }
+
+    @page {
+      size: A4;
+      margin: 12mm;
+    }
+
+    @media print {
+      html,
+      body {
+        background: #ffffff !important;
+        color: #0f172a !important;
+      }
+
+      body {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      .texture-overlay,
+      .cv-no-print {
+        display: none !important;
+      }
+
+      #root,
+      .cv-page {
+        background: #ffffff !important;
+      }
+
+      .cv-page {
+        padding: 0 !important;
+      }
+
+      .cv-sheet {
+        max-width: none !important;
+        min-height: auto !important;
+        margin: 0 !important;
+        border: 0 !important;
+        box-shadow: none !important;
+      }
+
+      .cv-section {
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
+
+      a {
+        color: inherit !important;
+        text-decoration: none !important;
+      }
+    }
   </style>
   <script type="importmap">
 {

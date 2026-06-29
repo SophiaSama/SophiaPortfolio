@@ -5,12 +5,33 @@ import Hero from './components/Hero';
 import Experience from './components/Experience';
 import { ProjectCard } from './components/ProjectCard';
 import AIChat from './components/AIChat';
-import { Mail, Linkedin, MapPin, Copy, Check, ExternalLink, Loader2, Rocket, AlertTriangle, UserCheck, Shield, Cpu } from 'lucide-react';
+import { Mail, Linkedin, MapPin, Copy, Check, ExternalLink, Loader2, AlertTriangle, UserCheck, Shield, Cpu } from 'lucide-react';
 import { PortfolioProvider, usePortfolio } from './contexts/PortfolioContext';
+import CVPage from './components/CVPage';
+
+type ViewMode = 'portfolio' | 'cv';
+
+const getViewMode = (): ViewMode => {
+  if (typeof window === 'undefined') {
+    return 'portfolio';
+  }
+
+  return new URLSearchParams(window.location.search).get('view') === 'cv' ? 'cv' : 'portfolio';
+};
+
+const getViewHref = (viewMode: ViewMode): string => {
+  if (typeof window === 'undefined') {
+    return viewMode === 'cv' ? '?view=cv' : '/';
+  }
+
+  const path = window.location.pathname || '/';
+  return viewMode === 'cv' ? `${path}?view=cv` : path;
+};
 
 const PortfolioContent: React.FC = () => {
   const { data, isLoading, error } = usePortfolio();
   const [copied, setCopied] = useState(false);
+  const [viewMode, setViewMode] = useState<ViewMode>(() => getViewMode());
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
     if (typeof window === 'undefined') return 'dark';
     const storedTheme = window.localStorage.getItem('portfolio-theme');
@@ -23,6 +44,19 @@ const PortfolioContent: React.FC = () => {
     window.localStorage.setItem('portfolio-theme', theme);
   }, [theme]);
 
+  useEffect(() => {
+    const handlePopState = () => {
+      setViewMode(getViewMode());
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  useEffect(() => {
+    document.title = viewMode === 'cv' ? 'Ruiping Wang | CV' : 'Ruiping Wang | Systems & Security';
+  }, [viewMode]);
+
   const handleCopyEmail = () => {
     navigator.clipboard.writeText(data.email);
     setCopied(true);
@@ -32,6 +66,9 @@ const PortfolioContent: React.FC = () => {
   const handleToggleTheme = () => {
     setTheme((currentTheme) => currentTheme === 'dark' ? 'light' : 'dark');
   };
+
+  const cvHref = getViewHref('cv');
+  const portfolioHref = getViewHref('portfolio');
 
   if (isLoading) {
     return (
@@ -44,9 +81,13 @@ const PortfolioContent: React.FC = () => {
     );
   }
 
+  if (viewMode === 'cv') {
+    return <CVPage portfolioHref={portfolioHref} />;
+  }
+
   return (
     <div className="min-h-screen bg-[var(--ink)] text-[var(--paper)] transition-colors">
-      <Header theme={theme} onToggleTheme={handleToggleTheme} />
+      <Header theme={theme} onToggleTheme={handleToggleTheme} cvHref={cvHref} />
 
       <main>
         {error && (
@@ -56,7 +97,7 @@ const PortfolioContent: React.FC = () => {
           </div>
         )}
 
-        <Hero />
+        <Hero cvHref={cvHref} />
 
         {/* LinkedIn Embed / Profile Section */}
         <section className="py-24 px-6 bg-[var(--band)] border-y border-[var(--line)]">
@@ -155,13 +196,6 @@ const PortfolioContent: React.FC = () => {
                   <ProjectCard project={project} />
                 </div>
               ))}
-
-              <div className="group relative border border-[var(--line)] flex flex-col items-center justify-center p-12 hover:bg-[var(--paper)] hover:text-[var(--ink)] hover:border-[var(--paper)] transition-colors duration-300 min-h-[300px]">
-                <h3 className="text-2xl font-fraunces font-bold mb-3 text-center uppercase tracking-wider">Next Frontier:<br />UWB Security</h3>
-                <p className="text-sm font-medium text-center max-w-sm leading-relaxed">
-                  Currently prototyping ultra-wideband (UWB) ranging security and multi-layered authentication for next-gen vehicle access.
-                </p>
-              </div>
             </div>
           </div>
         </section>

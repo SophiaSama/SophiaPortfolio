@@ -28,6 +28,7 @@ export const DEFAULT_PORTFOLIO_DATA: PortfolioData = {
       imageUrl:
         "https://images.unsplash.com/photo-1554224155-6726b3ff858f?q=80&w=2672&auto=format&fit=crop",
       githubUrl: "https://github.com/SophiaSama/AI-Receipt-Reader",
+      demoUrl: "https://smart-receipt-reader.vercel.app",
       features: [
         "Dynamically switches between Tesseract (free/local), Hybrid, and Vision LLM based on image quality to optimize for speed and cost",
         "LLM integration for intelligent OCR and structured data extraction",
@@ -60,23 +61,26 @@ export const DEFAULT_PORTFOLIO_DATA: PortfolioData = {
       ]
     },
     {
-      id: "carkeydemo",
-      title: "CarKeyDemo",
+      id: "multi-agent-medical-assistant",
+      title: "HealthAgent AI - Multi-Agent Medical Assistant",
       description:
-        "iOS implementation of digital car key technology using Apple CarKey and CCC Digital Key standards.",
+        "Medical consultation web app that orchestrates six Gemini agents to triage symptoms, suggest OTC care, find nearby clinics, and persist patient history.",
       longDescription:
-        "This project demonstrates high-security handshakes between mobile devices and vehicles using BLE and NFC. " +
-        "It covers the full digital key lifecycle — secure pairing, authentication, and encrypted communication " +
-        "protocols for next-generation vehicle access — fully compliant with Car Connectivity Consortium (CCC) standards.",
-      tags: ["iOS", "Swift", "BLE", "NFC", "Automotive Security", "CCC Standards"],
+        "A full-stack TypeScript application that coordinates specialized medical-support agents across a structured consultation flow. " +
+        "The system combines React 19 and Vite on the frontend with an Express backend, Gemini 2.5 Flash Lite for orchestration, " +
+        "Supabase for authentication and patient-history persistence, and Google Maps Places for clinic discovery. " +
+        "It produces typed JSON medical-advice responses and includes integration-test and containerized deployment support.",
+      tags: ["TypeScript", "React", "Gemini", "Express", "Supabase", "Google Maps", "Vercel"],
       imageUrl:
-        "https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=2670&auto=format&fit=crop",
-      githubUrl: "https://github.com/SophiaSama/CarKeyDemo",
+        "https://images.unsplash.com/photo-1576091160550-2173dba999ef?q=80&w=2670&auto=format&fit=crop",
+      githubUrl: "https://github.com/SophiaSama/Multi-agent-Medical-Assistant",
+      demoUrl: "https://multi-agent-medical-assistant-lilac.vercel.app/",
       features: [
-        "Secure NFC/BLE handshake protocol implementation",
-        "Digital Key provisioning and revocation lifecycle",
-        "Compliance with Car Connectivity Consortium (CCC) standards",
-        "Swift-based modular architecture for automotive SDKs"
+        "Six-agent consultation pipeline with sequential intake, parallel specialist analysis, and synthesized structured output",
+        "Gemini-powered risk assessment, OTC guidance, follow-up planning, and typed JSON response validation",
+        "Supabase-backed email authentication plus patient-history read/write for repeat consultations",
+        "Google Places integration for nearby clinic discovery within the consultation experience",
+        "Production-minded TypeScript stack with Express API, Vercel deployment, Docker support, and integration tests"
       ]
     }
   ],
