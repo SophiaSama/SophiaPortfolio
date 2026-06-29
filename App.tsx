@@ -109,10 +109,10 @@ const PortfolioContent: React.FC = () => {
                     <UserCheck size={14} /> Professional Identity
                   </div>
                   <h2 className="text-3xl md:text-5xl font-fraunces font-bold text-[var(--paper)] tracking-tight max-w-3xl">
-                    Systems architecture, test discipline, and applied AI in one engineering track.
+                    Systems architecture, engineering discipline, and applied AI in one profile.
                   </h2>
                   <p className="text-[var(--body-muted)] text-lg leading-relaxed max-w-3xl">
-                    My background spans automotive validation, embedded software quality, MBSE-driven system design, and production LLM applications. LinkedIn carries the full career timeline; this site focuses on the engineering judgment behind the work.
+                    My background spans automotive validation, embedded software quality, MBSE-driven system design, and practical AI application development. LinkedIn covers the full career history; this site highlights selected work and the engineering thinking behind it.
                   </p>
                   <div className="flex flex-wrap gap-4 pt-2">
                     <a
@@ -134,22 +134,22 @@ const PortfolioContent: React.FC = () => {
                   <div className="flex items-start justify-between gap-6 border-b border-[var(--line)] pb-6">
                     <div>
                       <p className="text-xs uppercase tracking-[0.24em] text-[var(--subtle)] mb-2">Current Focus</p>
-                      <h3 className="text-2xl font-fraunces font-bold text-[var(--paper)]">Secure access systems</h3>
+                      <h3 className="text-2xl font-fraunces font-bold text-[var(--paper)]">Connected access systems</h3>
                     </div>
                     <Linkedin className="text-[var(--copper)]" size={28} />
                   </div>
                   <div className="divide-y divide-[var(--line)]">
                     <div className="py-5">
                       <p className="text-sm text-[var(--subtle)]">Architecture</p>
-                      <p className="text-[var(--paper)] font-medium">CCC/MFi/Google-aligned digital key flows</p>
+                      <p className="text-[var(--paper)] font-medium">Digital key and connected access system design</p>
                     </div>
                     <div className="py-5">
                       <p className="text-sm text-[var(--subtle)]">Connectivity</p>
-                      <p className="text-[var(--paper)] font-medium">UWB, BLE, NFC, cloud backends</p>
+                      <p className="text-[var(--paper)] font-medium">UWB, BLE, NFC for Access Solutions</p>
                     </div>
                     <div className="py-5">
                       <p className="text-sm text-[var(--subtle)]">Applied AI</p>
-                      <p className="text-[var(--paper)] font-medium">LLM tools for engineering workflows</p>
+                      <p className="text-[var(--paper)] font-medium">AI tools for prototyping and engineering workflows</p>
                     </div>
                     <a
                       href={data.linkedinUrl}
@@ -177,7 +177,7 @@ const PortfolioContent: React.FC = () => {
                 </div>
                 <h2 className="text-3xl md:text-5xl font-fraunces font-bold text-[var(--paper)] mb-6 tracking-tight">Selected Technical Work</h2>
                 <p className="text-[var(--body-muted)] text-lg">
-                  Production-minded explorations across AI tooling, evaluation safety, and secure automotive connectivity.
+                  Selected side projects in AI applications.
                 </p>
               </div>
               <a
@@ -204,9 +204,9 @@ const PortfolioContent: React.FC = () => {
 
         <section id="contact" className="py-32 px-6 border-t border-[var(--line)] bg-[var(--band)] scroll-mt-28">
           <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-4xl font-fraunces font-bold text-[var(--paper)] mb-8 tracking-tight">Let’s Talk Systems</h2>
+            <h2 className="text-4xl font-fraunces font-bold text-[var(--paper)] mb-8 tracking-tight">Let’s Connect</h2>
             <p className="text-[var(--body-muted)] mb-12 text-lg max-w-2xl mx-auto">
-              I am open to discussions regarding System Architecture roles and automotive security research collaborations.
+              Open to conversations about system architecture, connected mobility, and applied AI opportunities.
             </p>
 
             <div className="flex flex-col md:flex-row justify-center items-center gap-6">

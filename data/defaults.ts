@@ -4,8 +4,7 @@ export const DEFAULT_PORTFOLIO_DATA: PortfolioData = {
   // ── Hero ──────────────────────────────────────────────────────────────────
   heroTitle: "System Architect",
   heroSubtitle:
-    "13+ years building and testing robust systems — from automotive embedded software to cloud-native AI. " +
-    "Now building LLM applications to for productivity and exploring the frontier of intelligent systems.",
+    "13+ years across automotive software, system validation, and architecture, with recent work in AI-enabled applications and engineering tools.",
 
   // ── Contact ───────────────────────────────────────────────────────────────
   email: "wang.ruiping0720@gmail.com",
@@ -95,7 +94,7 @@ export const DEFAULT_PORTFOLIO_DATA: PortfolioData = {
       description:
         "Architecting secure ecosystems connecting vehicles, smart devices, and cloud backends " +
         "using UWB, BLE, and NFC. Translating complex OEM use cases into CCC/MFi/Google-compliant " +
-        "system designs. Location AI agent champion — integrating LLM-based tools into engineering workflows.",
+        "system designs. Location AI agent champion — advocate the team in AI adoption, integrate LLM-based tools into engineering workflows.",
       tech: "Python, System Architecture, UWB, BLE, NFC, SysML, UML, LLMs"
     },
     {
@@ -164,7 +163,7 @@ export const DEFAULT_PORTFOLIO_DATA: PortfolioData = {
       degree: "Bachelor of Engineering, Electrical & Electronics Engineering",
       school: "Nanyang Technological University",
       year: "2006 – 2010",
-      details: "Core focus on systems, control, and signal processing, FYP in Bioinformatics"
+      details: "Core focus on systems, control, and signal processing, FYP in Machine Learning application in Bioinformatics"
     }
   ],
 
