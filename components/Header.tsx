@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Menu, X, CircuitBoard, Moon, Sun } from 'lucide-react';
+import { Menu, X, CircuitBoard, Moon, Sun, FileText } from 'lucide-react';
 import { usePortfolio } from '../contexts/PortfolioContext';
 
 interface HeaderProps {
   theme: 'dark' | 'light';
   onToggleTheme: () => void;
+  cvHref: string;
 }
 
-const Header: React.FC<HeaderProps> = ({ theme, onToggleTheme }) => {
+const Header: React.FC<HeaderProps> = ({ theme, onToggleTheme, cvHref }) => {
   const { data } = usePortfolio();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -61,6 +62,12 @@ const Header: React.FC<HeaderProps> = ({ theme, onToggleTheme }) => {
           >
             LinkedIn
           </a>
+          <a
+            href={cvHref}
+            className="inline-flex items-center gap-2 px-5 py-2 text-sm font-semibold rounded-md border border-[var(--line)] text-[var(--paper)] hover:border-[var(--paper)] hover:bg-[var(--paper)] hover:text-[var(--ink)] transition-all"
+          >
+            <FileText size={16} /> CV / PDF
+          </a>
           <button
             type="button"
             onClick={onToggleTheme}
@@ -113,6 +120,13 @@ const Header: React.FC<HeaderProps> = ({ theme, onToggleTheme }) => {
             onClick={() => setIsMobileMenuOpen(false)}
           >
             View LinkedIn Resume
+          </a>
+          <a
+            href={cvHref}
+            className="inline-flex items-center gap-2 text-base font-medium text-[var(--paper)]"
+            onClick={() => setIsMobileMenuOpen(false)}
+          >
+            <FileText size={16} /> Open CV / PDF View
           </a>
         </div>
       )}

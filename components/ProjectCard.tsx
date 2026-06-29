@@ -12,7 +12,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
     <article className="group flex flex-col md:flex-row gap-6 border-b border-[var(--paper)] pb-12 hover:bg-[var(--paper)] hover:text-[var(--ink)] transition-colors p-6 -mx-6 h-full">
       <div className="md:w-1/3 flex flex-col justify-between">
         <div>
-          <h3 className="text-3xl md:text-4xl font-fraunces font-black uppercase tracking-tight leading-none mb-4 group-hover:text-[var(--ink)] transition-colors">
+          <h3 className="text-2xl md:text-3xl font-fraunces font-bold tracking-normal leading-tight mb-4 break-words group-hover:text-[var(--ink)] transition-colors">
             {project.title}
           </h3>
           <div className="flex flex-wrap gap-2 mb-6">

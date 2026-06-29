@@ -1,7 +1,12 @@
 import React from 'react';
+import { FileText } from 'lucide-react';
 import { usePortfolio } from '../contexts/PortfolioContext';
 
-const Hero: React.FC = () => {
+interface HeroProps {
+  cvHref: string;
+}
+
+const Hero: React.FC<HeroProps> = ({ cvHref }) => {
   const { data } = usePortfolio();
 
   const scrollToSection = (id: string) => (e: React.MouseEvent) => {
@@ -68,6 +73,13 @@ const Hero: React.FC = () => {
               Contact
             </a>
           </div>
+
+          <a
+            href={cvHref}
+            className="inline-flex items-center justify-center gap-2 mt-3 border border-[var(--line)] px-6 py-3 text-[var(--paper)] font-bold uppercase tracking-widest text-xs hover:border-[var(--paper)] hover:bg-[var(--paper)] hover:text-[var(--ink)] transition-colors"
+          >
+            <FileText size={16} /> Open CV / PDF View
+          </a>
         </div>
 
       </div>
