@@ -19,7 +19,7 @@ const Hero: React.FC<HeroProps> = ({ cvHref }) => {
 
   return (
     <section className="min-h-[65vh] flex flex-col justify-center px-6 bg-[var(--ink)] border-b border-[var(--paper)]">
-      <div className="max-w-7xl mx-auto w-full grid grid-cols-1 md:grid-cols-12 gap-12 items-end pt-12 pb-24">
+      <div className="max-w-7xl mx-auto w-full grid grid-cols-1 md:grid-cols-12 gap-12 items-end pt-24 md:pt-28 pb-24">
 
         {/* Massive Typographic Left Scale */}
         <div className="md:col-span-8 flex flex-col justify-end">
@@ -31,7 +31,7 @@ const Hero: React.FC<HeroProps> = ({ cvHref }) => {
           <h1 className="text-4xl md:text-5xl lg:text-7xl font-bold font-fraunces leading-tight tracking-tight text-[var(--paper)] uppercase">
             {data.heroTitle.split(',')[0]}
             <span className="block text-2xl md:text-3xl lg:text-4xl font-light tracking-wide lowercase mt-2 italic opacity-80">
-              secure systems.
+              connected systems.
             </span>
           </h1>
         </div>
@@ -49,7 +49,7 @@ const Hero: React.FC<HeroProps> = ({ cvHref }) => {
             </div>
             <div className="py-4 flex justify-between items-baseline group hover:bg-[var(--paper)] hover:text-[var(--ink)] transition-colors cursor-default px-2">
               <span className="text-sm font-semibold uppercase tracking-widest">Core</span>
-              <span className="text-2xl font-fraunces font-bold">UWB / BLE</span>
+              <span className="text-2xl font-fraunces font-bold">Digital Key</span>
             </div>
             <div className="py-4 flex justify-between items-baseline group hover:bg-[var(--paper)] hover:text-[var(--ink)] transition-colors cursor-default px-2">
               <span className="text-sm font-semibold uppercase tracking-widest">Focus</span>

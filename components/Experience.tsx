@@ -12,7 +12,7 @@ const Experience: React.FC = () => {
           <div className="text-[var(--copper)] text-xs uppercase tracking-[0.24em] font-bold mb-4">Career Trace</div>
           <h2 className="text-3xl md:text-5xl font-fraunces font-bold text-[var(--paper)] mb-4">Professional Journey</h2>
           <p className="text-[var(--body-muted)] max-w-2xl">
-            From test engineering to systems architecture, a decade of experience in automotive innovation.
+            A progression from test engineering to systems architecture across automotive and robotics system.
           </p>
         </div>
 
