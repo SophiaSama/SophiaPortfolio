@@ -43,6 +43,10 @@ const renderList = (items: string[]) => {
   return items.map((item) => `<li>${escapeHtml(item)}</li>`).join('');
 };
 
+const renderLink = (href: string, label: string, className = '') => {
+  return `<a href="${escapeHtml(href)}"${className ? ` class="${className}"` : ''}>${escapeHtml(label)}</a>`;
+};
+
 const renderCvHtml = (data: PortfolioData) => {
   const experience = data.workExperience.map((job) => `
     <article class="experience-item">
@@ -71,7 +75,7 @@ const renderCvHtml = (data: PortfolioData) => {
     <article class="compact-card">
       <div class="row project-header">
         <h3>${escapeHtml(project.title)}</h3>
-        <span class="link-label">Source</span>
+        ${renderLink(project.githubUrl, 'Source', 'link-label')}
       </div>
       <p class="body-copy small">${escapeHtml(project.description)}</p>
       <p class="tagline">${escapeHtml(project.tags.join(' · '))}</p>
@@ -305,12 +309,19 @@ const renderCvHtml = (data: PortfolioData) => {
         }
 
         .link-label {
+          display: inline-block;
           font-size: 8px;
           font-weight: 600;
-          color: #94a3b8;
+          color: #64748b;
           text-transform: uppercase;
           letter-spacing: 0.12em;
           padding-top: 1px;
+          text-decoration: none;
+        }
+
+        a {
+          color: inherit;
+          text-decoration: none;
         }
 
         .skill-grid {
@@ -335,8 +346,8 @@ const renderCvHtml = (data: PortfolioData) => {
             <p class="summary">${escapeHtml(data.heroSubtitle)}</p>
           </div>
           <div class="contact">
-            <div>${escapeHtml(data.email)}</div>
-            <div>LinkedIn: ${escapeHtml(data.linkedinUrl)}</div>
+            <div>${renderLink(`mailto:${data.email}`, data.email)}</div>
+            <div>LinkedIn: ${renderLink(data.linkedinUrl, data.linkedinUrl)}</div>
             <div>${escapeHtml(data.location)}</div>
           </div>
         </header>
@@ -422,7 +433,7 @@ export default {
         },
       });
 
-      return new Response(pdfBuffer, {
+      return new Response(new Uint8Array(pdfBuffer), {
         status: 200,
         headers: {
           'Content-Type': 'application/pdf',
