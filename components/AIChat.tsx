@@ -1,28 +1,43 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { MessageSquare, X, Send, Sparkles, Loader2 } from 'lucide-react';
+import { MessageSquare, X, Send, RotateCcw, Loader2 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
-import { sendMessageToGemini, generateSystemInstruction, sendToolResponse } from '../services/geminiService';
+import { sendMessageToGemini, generateSystemInstruction, sendToolResponse, resetChatSession } from '../services/geminiService';
 import { ChatMessage } from '../types';
 import { usePortfolio } from '../contexts/PortfolioContext';
 
 const CONTACT_NOTIFICATION_TIMEOUT_MS = 15000;
+const INITIAL_ASSISTANT_MESSAGE = "Hi! I'm Ruiping's AI Assistant. **She** is a System Architect with deep expertise in automotive security and test engineering. Ask me about her side projects or her architectural background!";
+
+const createMessageId = () => {
+  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
+    return crypto.randomUUID();
+  }
+
+  return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+};
+
+const createChatMessage = (role: ChatMessage['role'], text: string): ChatMessage => ({
+  id: createMessageId(),
+  role,
+  text,
+  timestamp: new Date()
+});
+
+const createInitialMessages = (): ChatMessage[] => [
+  createChatMessage('model', INITIAL_ASSISTANT_MESSAGE)
+];
 
 const AIChat: React.FC = () => {
   const { data, rawMarkdown } = usePortfolio();
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    {
-      role: 'model',
-      text: "Hi! I'm Ruiping's AI Assistant. **She** is a System Architect with deep expertise in automotive security and test engineering. Ask me about her side projects or her architectural background!",
-      timestamp: new Date()
-    }
-  ]);
+  const [messages, setMessages] = useState<ChatMessage[]>(() => createInitialMessages());
   const [isSubmittingContactNotification, setIsSubmittingContactNotification] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const isBusy = isLoading || isSubmittingContactNotification;
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -32,15 +47,26 @@ const AIChat: React.FC = () => {
     scrollToBottom();
   }, [messages, isOpen]);
 
+  const handleResetConversation = () => {
+    resetChatSession();
+    setInput('');
+    setIsLoading(false);
+    setIsSubmittingContactNotification(false);
+    setMessages(createInitialMessages());
+  };
+
+  const handleInputKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      e.currentTarget.form?.requestSubmit();
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim() || isLoading) return;
+    if (!input.trim() || isBusy) return;
 
-    const userMsg: ChatMessage = {
-      role: 'user',
-      text: input,
-      timestamp: new Date()
-    };
+    const userMsg = createChatMessage('user', input.trim());
 
     setMessages(prev => [...prev, userMsg]);
     setInput('');
@@ -54,22 +80,14 @@ const AIChat: React.FC = () => {
       if (response.functionCall && response.functionCall.name === 'delegate_to_owner') {
         const { user_email, user_name, question, conversation_summary } = response.functionCall.args;
 
-        const botMsg: ChatMessage = {
-          role: 'model',
-          text: response.text || "One moment, I'm forwarding your request to Ruiping...",
-          timestamp: new Date()
-        };
+        const botMsg = createChatMessage('model', response.text || "One moment, I'm preparing your message for Ruiping...");
         setMessages(prev => [...prev, botMsg]);
 
         // Execute the delegation
         const toolResult = await handleDelegation(user_email, user_name, question, conversation_summary);
 
         if (!toolResult.success) {
-          const finalBotMsg: ChatMessage = {
-            role: 'model',
-            text: `I couldn't notify Ruiping automatically: ${toolResult.error} Please email Ruiping directly at ${data.email}.`,
-            timestamp: new Date()
-          };
+          const finalBotMsg = createChatMessage('model', `I couldn't notify Ruiping automatically: ${toolResult.error} Please email Ruiping directly at ${data.email}.`);
           setMessages(prev => [...prev, finalBotMsg]);
           return;
         }
@@ -77,22 +95,18 @@ const AIChat: React.FC = () => {
         // Send tool response back to Gemini for the second turn
         const finalResponse = await sendToolResponse(response.functionCall.id, toolResult);
 
-        const finalBotMsg: ChatMessage = {
-          role: 'model',
-          text: finalResponse.text,
-          timestamp: new Date()
-        };
+        const finalBotMsg = createChatMessage('model', finalResponse.text || "Ruiping has been notified and can reply by email.");
         setMessages(prev => [...prev, finalBotMsg]);
       } else {
-        const botMsg: ChatMessage = {
-          role: 'model',
-          text: response.text,
-          timestamp: new Date()
-        };
+        const botMsg = createChatMessage('model', response.text || "I couldn't generate a response just now. Please try again in a moment.");
         setMessages(prev => [...prev, botMsg]);
       }
     } catch (error) {
-      console.error(error);
+      console.error("Unexpected chat error:", error);
+      setMessages(prev => [
+        ...prev,
+        createChatMessage('model', "I hit a technical snag while answering. Please try again, or email Ruiping directly if the issue continues.")
+      ]);
     } finally {
       setIsLoading(false);
     }
@@ -165,21 +179,36 @@ const AIChat: React.FC = () => {
           {/* Header */}
           <div className="bg-[var(--paper)] border-b border-[var(--paper)] p-4 flex justify-between items-center">
             <div className="flex items-center gap-2">
+              <MessageSquare size={16} className="text-[var(--ink)]" />
               <span className="font-bold tracking-[0.2em] text-[var(--ink)] text-xs uppercase">Terminal / Assistant</span>
             </div>
-            <button
-              onClick={() => setIsOpen(false)}
-              className="text-[var(--ink)] opacity-70 hover:opacity-100 transition-opacity"
-            >
-              <X size={20} />
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handleResetConversation}
+                className="text-[var(--ink)] opacity-70 hover:opacity-100 transition-opacity disabled:opacity-40"
+                aria-label="Reset assistant conversation"
+                title="Reset conversation"
+                disabled={isBusy}
+              >
+                <RotateCcw size={18} />
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsOpen(false)}
+                className="text-[var(--ink)] opacity-70 hover:opacity-100 transition-opacity"
+                aria-label="Close assistant chat"
+              >
+                <X size={20} />
+              </button>
+            </div>
           </div>
 
           {/* Messages */}
           <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-transparent">
-            {messages.map((msg, idx) => (
+            {messages.map((msg) => (
               <div
-                key={idx}
+                key={msg.id}
                 className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
                 <div
@@ -196,8 +225,11 @@ const AIChat: React.FC = () => {
             ))}
             {isLoading && (
               <div className="flex justify-start">
-                <div className="p-3 border border-[var(--paper)]">
-                  <Loader2 size={16} className="animate-spin text-[var(--paper)]" />
+                <div className="max-w-[85%] p-3 border border-[var(--paper)] text-[var(--paper)] font-mono text-[13px] leading-relaxed" aria-live="polite">
+                  <div className="flex items-center gap-2">
+                    <Loader2 size={16} className="animate-spin text-[var(--paper)] shrink-0" />
+                    <span>{isSubmittingContactNotification ? 'Securely notifying Ruiping...' : 'Reviewing Ruiping\'s portfolio context...'}</span>
+                  </div>
                 </div>
               </div>
             )}
@@ -207,22 +239,28 @@ const AIChat: React.FC = () => {
 
           {/* Input */}
           <form onSubmit={handleSubmit} className="p-4 border-t border-[var(--paper)] bg-[var(--ink)]">
-            <div className="relative">
-              <input
-                type="text"
+            <div className="flex items-end gap-2">
+              <textarea
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="PROMPT >"
-                className="w-full bg-transparent text-[var(--paper)] placeholder-[var(--paper)]/40 border border-[var(--paper)] py-3 pl-4 pr-12 focus:outline-none focus:ring-0 font-mono text-sm"
+                onKeyDown={handleInputKeyDown}
+                placeholder="PROMPT > Ask about Ruiping's projects, architecture work, or availability"
+                rows={2}
+                disabled={isBusy}
+                aria-label="Message Ruiping's career assistant"
+                className="min-h-[52px] max-h-32 flex-1 resize-none bg-transparent text-[var(--paper)] placeholder-[var(--paper)]/40 border border-[var(--paper)] py-3 px-4 focus:outline-none focus:ring-0 font-mono text-sm disabled:opacity-60"
               />
               <button
                 type="submit"
-                disabled={isLoading || isSubmittingContactNotification || !input.trim()}
-                className="absolute right-0 top-0 bottom-0 px-4 bg-[var(--paper)] text-[var(--ink)] hover:opacity-80 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity font-bold uppercase text-xs tracking-wider"
+                disabled={isBusy || !input.trim()}
+                className="h-[52px] w-[52px] inline-flex items-center justify-center bg-[var(--paper)] text-[var(--ink)] hover:opacity-80 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
+                aria-label="Send message to assistant"
+                title="Send message"
               >
-                Send
+                <Send size={18} />
               </button>
             </div>
+            <p className="mt-2 text-[10px] uppercase tracking-[0.18em] text-[var(--subtle)] font-mono">Enter sends / Shift+Enter adds a line</p>
           </form>
         </div>
       )}
@@ -230,8 +268,10 @@ const AIChat: React.FC = () => {
       {/* Toggle Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
+        aria-label="Open assistant chat"
         className={`group flex items-center gap-3 bg-[var(--ink)] text-[var(--paper)] border border-[var(--paper)] hover:bg-[var(--paper)] hover:text-[var(--ink)] py-3 px-6 transition-colors ${isOpen ? 'hidden' : 'block'}`}
       >
+        <MessageSquare size={18} />
         <span className="font-bold tracking-[0.2em] text-xs uppercase">Chat with Career Agent</span>
       </button>
     </div>
