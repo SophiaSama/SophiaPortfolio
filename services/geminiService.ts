@@ -254,6 +254,11 @@ export const initializeChat = async (systemInstruction: string) => {
   }
 };
 
+export const resetChatSession = () => {
+  chatSession = null;
+  currentInstructionChecksum = "";
+};
+
 export const sendMessageToGemini = async (message: string, systemInstruction: string): Promise<any> => {
   const client = getClient();
   if (!client) return { text: "Please connect an API key to chat!" };

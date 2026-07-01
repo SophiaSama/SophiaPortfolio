@@ -1,5 +1,5 @@
 import React from 'react';
-import { Briefcase, Calendar, GraduationCap } from 'lucide-react';
+import { Award, Briefcase, Calendar, GraduationCap } from 'lucide-react';
 import { usePortfolio } from '../contexts/PortfolioContext';
 
 const Experience: React.FC = () => {
@@ -76,6 +76,21 @@ const Experience: React.FC = () => {
                       {edu.details && (
                         <p className="text-xs text-[var(--body-muted)] italic">{edu.details}</p>
                       )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <h3 className="text-2xl font-fraunces font-bold text-[var(--paper)] flex items-center gap-3 mb-8">
+                  <Award className="text-[var(--copper)]" />
+                  Certifications
+                </h3>
+
+                <div className="space-y-3">
+                  {data.certifications.map((certification) => (
+                    <div key={certification} className="bg-[var(--panel)] border border-[var(--line)] px-4 py-3 rounded-lg hover:border-[var(--copper)]/50 transition-colors">
+                      <p className="text-sm text-[var(--body-muted)] leading-relaxed">{certification}</p>
                     </div>
                   ))}
                 </div>
