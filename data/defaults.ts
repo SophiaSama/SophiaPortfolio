@@ -170,6 +170,7 @@ export const DEFAULT_PORTFOLIO_DATA: PortfolioData = {
   // ── Certifications ────────────────────────────────────────────────────────
   certifications: [
     // AI / ML
+    "AI Engineer Core Track: LLM Engineering, RAG, QLoRA, Agents (2026)",
     "Google Prompting Essentials (2025)",
     "Machine Learning with Python — Coursera / IBM",
     "Deep Learning & Neural Networks with Keras — IBM",
@@ -187,7 +188,7 @@ export const DEFAULT_PORTFOLIO_DATA: PortfolioData = {
   // ── Skills ────────────────────────────────────────────────────────────────
   skills: [
     // AI / ML
-    "Python", "LLMs", "Keras", "Machine Learning",
+    "Python", "LLMs", "LLM Engineering", "RAG", "QLoRA", "AI Agents", "Keras", "Machine Learning",
     // Cloud & DevOps
     "AWS", "CI/CD", "Docker", "Playwright", "GitHub Actions", "Bamboo", "Grafana",
     // Frontend
@@ -207,7 +208,7 @@ export const DEFAULT_PORTFOLIO_DATA: PortfolioData = {
   skillCategories: [
     {
       category: "AI / ML",
-      items: ["Python", "LLMs", "Keras", "Machine Learning"]
+      items: ["Python", "LLMs", "LLM Engineering", "RAG", "QLoRA", "AI Agents", "Keras", "Machine Learning"]
     },
     {
       category: "Cloud & DevOps",
