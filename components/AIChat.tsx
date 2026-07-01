@@ -6,7 +6,7 @@ import { sendMessageToGemini, generateSystemInstruction, sendToolResponse } from
 import { ChatMessage } from '../types';
 import { usePortfolio } from '../contexts/PortfolioContext';
 
-const EMAIL_SUBMISSION_TIMEOUT_MS = 15000;
+const CONTACT_NOTIFICATION_TIMEOUT_MS = 15000;
 
 const AIChat: React.FC = () => {
   const { data, rawMarkdown } = usePortfolio();
@@ -20,7 +20,7 @@ const AIChat: React.FC = () => {
       timestamp: new Date()
     }
   ]);
-  const [isSubmittingEmail, setIsSubmittingEmail] = useState(false);
+  const [isSubmittingContactNotification, setIsSubmittingContactNotification] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -67,7 +67,7 @@ const AIChat: React.FC = () => {
         if (!toolResult.success) {
           const finalBotMsg: ChatMessage = {
             role: 'model',
-            text: `I couldn't send the email automatically: ${toolResult.error} Please email Ruiping directly at ${data.email}.`,
+            text: `I couldn't notify Ruiping automatically: ${toolResult.error} Please email Ruiping directly at ${data.email}.`,
             timestamp: new Date()
           };
           setMessages(prev => [...prev, finalBotMsg]);
@@ -107,9 +107,9 @@ const AIChat: React.FC = () => {
       return { success: false, error: "Missing recipient or sender email address." };
     }
 
-    setIsSubmittingEmail(true);
+    setIsSubmittingContactNotification(true);
     const controller = new AbortController();
-    const timeoutId = window.setTimeout(() => controller.abort(), EMAIL_SUBMISSION_TIMEOUT_MS);
+    const timeoutId = window.setTimeout(() => controller.abort(), CONTACT_NOTIFICATION_TIMEOUT_MS);
 
     try {
       const response = await fetch('/api/contact', {
@@ -136,24 +136,24 @@ const AIChat: React.FC = () => {
       }
 
       if (response.ok && responseData?.success !== false) {
-        return { success: true, details: "The email was successfully sent to Ruiping." };
+        return { success: true, details: "Ruiping was notified and can reply by email." };
       }
 
       const providerMessage = responseData?.message || responseData?.error || responseText || response.statusText;
-      console.error("Email API rejected delegation email:", providerMessage);
+      console.error("Contact notification API rejected the message:", providerMessage);
       return {
         success: false,
-        error: `Email API rejected the message: ${providerMessage}`
+        error: `Notification API rejected the message: ${providerMessage}`
       };
     } catch (error) {
-      console.error("Failed to send delegation email:", error);
+      console.error("Failed to send contact notification:", error);
       if (error instanceof DOMException && error.name === 'AbortError') {
-        return { success: false, error: "Email service timed out." };
+        return { success: false, error: "Notification service timed out." };
       }
-      return { success: false, error: "Network error during email delegation." };
+      return { success: false, error: "Network error during contact notification." };
     } finally {
       window.clearTimeout(timeoutId);
-      setIsSubmittingEmail(false);
+      setIsSubmittingContactNotification(false);
     }
   };
 
@@ -217,7 +217,7 @@ const AIChat: React.FC = () => {
               />
               <button
                 type="submit"
-                disabled={isLoading || isSubmittingEmail || !input.trim()}
+                disabled={isLoading || isSubmittingContactNotification || !input.trim()}
                 className="absolute right-0 top-0 bottom-0 px-4 bg-[var(--paper)] text-[var(--ink)] hover:opacity-80 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity font-bold uppercase text-xs tracking-wider"
               >
                 Send

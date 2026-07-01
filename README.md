@@ -18,14 +18,13 @@ View your app in AI Studio: <https://ai.studio/apps/drive/1_Xw7a8XdhUVwmvhnJyZ0A
 3. Run the app:
    `npm run dev`
 
-## Email Handoff
+## Contact Notification Handoff
 
-The chat delegation flow sends email through a Vercel Serverless Function at `/api/contact` using Nodemailer with Gmail SMTP.
+The chat delegation flow sends a push notification through a Vercel Serverless Function at `/api/contact` using [Pushover](https://pushover.net/). The visitor's email address is included in the notification and attached as a `mailto:` reply link.
 
 Required Vercel environment variables:
 
-- `GMAIL_USER` — your Gmail address
-- `GMAIL_APP_PASS` — a [Google App Password](https://myaccount.google.com/apppasswords) (requires 2-Step Verification)
-- `CONTACT_TO_EMAIL`
+- `PUSHOVER_USER_KEY` — your Pushover user key
+- `PUSHOVER_API_TOKEN` — the API token for your Pushover application
 
-The plain Vite dev server does not run Vercel functions locally; use Vercel deployment or `vercel dev` when testing the email API end to end.
+The plain Vite dev server does not run Vercel functions locally; use Vercel deployment or `vercel dev` when testing the contact notification API end to end.
