@@ -238,7 +238,7 @@ export const initializeChat = async (systemInstruction: string) => {
 
   try {
     chatSession = (client as any).chats.create({
-      model: 'gemini-2.5-flash-lite',
+      model: 'gemini-2.5-flash',
       config: {
         systemInstruction: systemInstruction,
         temperature: 0.5,
