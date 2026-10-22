@@ -34,6 +34,39 @@ Renaming the variable to `VITE_GEMINI_API_KEY` would **not** have solved the iss
 > **Fundamental Security Principle**:
 > No secret or private API key should ever be delivered to the client browser runtime. If the browser needs to use a private key, that architecture is inherently insecure.
 
+### 2.3 Why `.gitignore` Does NOT Protect Deployed Files (The DevTools Vector)
+
+A common point of confusion is: *"If `dist/` is listed in `.gitignore`, how could anyone see the key?"*
+
+It is essential to distinguish between **Source Control** and **Production Delivery**:
+
+```
+[ Developer / Git ]                   [ CI / CD Deployment (Vercel) ]                 [ Public Visitor ]
+  git push (No dist committed)  ──►     Runs `npm run build`                      ──►    Visits website
+  dist/ is ignored in git               Bakes env into dist/assets/index-*.js            Browser downloads JS chunk
+  GitHub shows no secrets               Serves dist/ publicly to the web                 Opens DevTools ➔ Key exposed!
+```
+
+1. **What `.gitignore` Actually Does**:
+   - `.gitignore` only tells Git not to commit `dist/` into repository history.
+   - It protects GitHub from seeing your built artifacts, but has **zero effect** on how files are served in production.
+
+2. **How Deployment Pipelines Work**:
+   - When Vercel or any hosting platform builds your application, it runs `npm run build` with your production environment variables set.
+   - Vite produces `dist/assets/index-[hash].js`. Because of `define`, the literal string `"AIzaSy..."` is baked directly into that file.
+   - Vercel then deploys `dist/` to its global CDN edge servers.
+
+3. **How Any Visitor Inspects It via DevTools**:
+   - To render your website, the visitor's browser must fetch and execute `index-[hash].js`:
+     ```http
+     GET https://your-portfolio.vercel.app/assets/index-di7YBQbg.js (HTTP 200 OK)
+     ```
+   - Once downloaded into browser memory, anyone can open Chrome DevTools (`F12` or `Cmd + Option + I`):
+     - **Network Tab**: Click the downloaded `index-*.js` response and search (`Ctrl + F`) for `AIza`.
+     - **Sources Tab**: Expand the site's asset tree, open the bundle, and format it with pretty-print `{}`.
+     - **Global DevTools Search (`Cmd + Option + F`)**: Instantly searches across all downloaded scripts and strings in memory.
+   - Minification (`terser` / `esbuild`) renames variables (e.g. `const t = "AIza..."`), but string literals are **never** encrypted or hidden. If a secret is in client JavaScript, it is in plain view to the world.
+
 ---
 
 ## 3. Architecture Comparison: Before vs. After
