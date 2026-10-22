@@ -8,7 +8,7 @@ A React 19 + Vite + TypeScript portfolio website featuring an AI career assistan
 
 | Feature | Implementation |
 |---------|----------------|
-| **AI Career Assistant** | Google Gemini (`gemini-2.5-flash-lite`) with Function Calling for structured responses |
+| **AI Career Assistant** | Google Gemini (configurable via `GEMINI_MODEL`, default `gemini-3.8-flash`) with Function Calling |
 | **Remote Data Sync** | **Planned / Optional** — Supabase Storage to host `resume.md` → fetched at startup → parsed by Gemini into typed JSON (see `.env.example`) |
 | **PDF Export** | Playwright + `@sparticuz/chromium` (serverless-compatible) renders CV page to `Ruiping_Wang_CV.pdf` |
 | **Dual View Modes** | Portfolio view (`/`) + CV view (`?view=cv`) with shared data |
@@ -61,6 +61,8 @@ Create `.env.local` (local) or configure in Vercel (production):
 ```env
 # Server-side key for AI chat via /api/chat (Kept server-side only)
 GEMINI_API_KEY=your_google_ai_studio_key
+# Optional: Model name for /api/chat (defaults to gemini-3.8-flash)
+GEMINI_MODEL=gemini-3.8-flash
 
 # Optional: Remote resume sync (Planned — Supabase bucket + resume.md not yet provisioned)
 # SUPABASE_URL=your_supabase_project_url
