@@ -1,44 +1,10 @@
-
-import { GoogleGenAI, Chat, Type } from "@google/genai";
 import { PortfolioData } from '../types';
 
-let chatSession: Chat | null = null;
-let currentInstructionChecksum: string = "";
+let clientHistory: any[] = [];
+let currentInstructionChecksum: string = '';
 
-const GEMINI_REQUEST_TIMEOUT_MS = 30000;
 const EMAIL_PATTERN = /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/i;
 
-const getGeminiErrorMessage = (error: unknown): string => {
-  if (error instanceof Error && error.message === 'Gemini request timed out.') {
-    return "The AI service took too long to respond. Please try again in a moment.";
-  }
-
-  const status = (error as any)?.status ?? (error as any)?.code;
-  const detail = (error as any)?.message || '';
-
-  switch (status) {
-    case 400:
-      return "Something went wrong with the request (400 Bad Request). Please rephrase and try again.";
-    case 401:
-      return "The AI service is not properly configured (401 Unauthorized). Please check the API key.";
-    case 403:
-      return "Access to the AI service is restricted (403 Forbidden). The API key may lack permissions or billing is not enabled.";
-    case 404:
-      return "The requested AI model could not be found (404 Not Found). Please check the configuration.";
-    case 429:
-      return "The AI service is currently receiving too many requests (429 Rate Limit). Please wait a minute and try again.";
-    case 500:
-    case 502:
-    case 503:
-      return "The AI service is temporarily unavailable. Please try again shortly.";
-    default:
-      if (detail) {
-        const truncated = detail.length > 120 ? detail.slice(0, 120) + '…' : detail;
-        return `Something went wrong: ${truncated}`;
-      }
-      return "I hit a technical snag. Please try asking again.";
-  }
-};
 const GENERIC_EMAIL_PARTS = new Set([
   'admin',
   'career',
@@ -58,29 +24,6 @@ const GENERIC_EMAIL_PARTS = new Set([
   'user',
   'visitor',
 ]);
-
-const getClient = () => {
-  const apiKey = (process as any).env.API_KEY;
-  if (!apiKey) {
-    console.warn("API_KEY is missing from environment. AI features will be disabled.");
-    return null;
-  }
-  return new GoogleGenAI({ apiKey });
-};
-
-const withTimeout = async <T,>(promise: Promise<T>, timeoutMs: number, message: string): Promise<T> => {
-  let timeoutId: ReturnType<typeof setTimeout> | undefined;
-
-  const timeout = new Promise<never>((_, reject) => {
-    timeoutId = setTimeout(() => reject(new Error(message)), timeoutMs);
-  });
-
-  try {
-    return await Promise.race([promise, timeout]);
-  } finally {
-    if (timeoutId) clearTimeout(timeoutId);
-  }
-};
 
 const toDisplayName = (value: string): string => {
   return value
@@ -115,50 +58,25 @@ const addInferredNameContext = (message: string): string => {
 };
 
 export const parseResumeMarkdown = async (markdown: string): Promise<Partial<PortfolioData> | null> => {
-  const client = getClient();
-  if (!client) return null;
-
   try {
-    const response = await client.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: `Parse the following resume markdown into a JSON object matching this schema. Focus on extracting the Projects, Hero Title, Hero Subtitle, and Contact info.
-      
-      Resume Content:
-      ${markdown}`,
-      config: {
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            heroTitle: { type: Type.STRING },
-            heroSubtitle: { type: Type.STRING },
-            email: { type: Type.STRING },
-            linkedinUrl: { type: Type.STRING },
-            location: { type: Type.STRING },
-            projects: {
-              type: Type.ARRAY,
-              items: {
-                type: Type.OBJECT,
-                properties: {
-                  id: { type: Type.STRING },
-                  title: { type: Type.STRING },
-                  description: { type: Type.STRING },
-                  longDescription: { type: Type.STRING },
-                  tags: { type: Type.ARRAY, items: { type: Type.STRING } },
-                  imageUrl: { type: Type.STRING },
-                  githubUrl: { type: Type.STRING },
-                  features: { type: Type.ARRAY, items: { type: Type.STRING } }
-                }
-              }
-            }
-          }
-        }
-      }
+    const response = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'parseResume',
+        markdown,
+      }),
     });
 
-    return JSON.parse((response as any).text || '{}');
+    if (!response.ok) {
+      console.warn('Failed to parse resume via /api/chat:', response.status);
+      return null;
+    }
+
+    const result = await response.json();
+    return result.data || null;
   } catch (error) {
-    console.error("Failed to parse resume markdown:", error, getGeminiErrorMessage(error));
+    console.error('Failed to parse resume markdown:', error);
     return null;
   }
 };
@@ -195,128 +113,94 @@ Professional, confident, technical, and helpful. Use Markdown for structured res
 `;
 };
 
-const tools = [
-  {
-    functionDeclarations: [
-      {
-        name: "delegate_to_owner",
-        description: "Sends a question to Ruiping Wang via email when the AI cannot answer it. Requires a summary of the context.",
-        parameters: {
-          type: Type.OBJECT,
-          properties: {
-            user_email: {
-              type: Type.STRING,
-              description: "The email address of the user who is asking the question."
-            },
-            user_name: {
-              type: Type.STRING,
-              description: "The name of the user. Infer it from the email address when reasonable; otherwise use 'a visitor'."
-            },
-            question: {
-              type: Type.STRING,
-              description: "The specific question to be forwarded."
-            },
-            conversation_summary: {
-              type: Type.STRING,
-              description: "A concise summary of the conversation context leading to this delegation."
-            }
-          },
-          required: ["user_email", "question", "conversation_summary"]
-        }
-      }
-    ]
-  }
-];
-
 export const initializeChat = async (systemInstruction: string) => {
-  if (chatSession && currentInstructionChecksum === systemInstruction) {
-    return chatSession;
-  }
-
-  const client = getClient();
-  if (!client) return null;
-
-  try {
-    chatSession = (client as any).chats.create({
-      model: 'gemini-2.5-flash',
-      config: {
-        systemInstruction: systemInstruction,
-        temperature: 0.5,
-        tools: tools as any,
-      },
-    });
-
+  if (currentInstructionChecksum !== systemInstruction) {
+    clientHistory = [];
     currentInstructionChecksum = systemInstruction;
-    return chatSession;
-  } catch (error) {
-    console.error("Failed to initialize chat:", error);
-    return null;
   }
+  return true;
 };
 
 export const resetChatSession = () => {
-  chatSession = null;
-  currentInstructionChecksum = "";
+  clientHistory = [];
+  currentInstructionChecksum = '';
 };
 
 export const sendMessageToGemini = async (message: string, systemInstruction: string): Promise<any> => {
-  const client = getClient();
-  if (!client) return { text: "Please connect an API key to chat!" };
-
-  if (!chatSession || currentInstructionChecksum !== systemInstruction) {
-    await initializeChat(systemInstruction);
-  }
-
-  if (!chatSession) {
-    return { text: "The assistant is initializing. One moment please." };
+  if (currentInstructionChecksum !== systemInstruction) {
+    clientHistory = [];
+    currentInstructionChecksum = systemInstruction;
   }
 
   try {
-    const response = await withTimeout(
-      chatSession.sendMessage({ message: addInferredNameContext(message) }),
-      GEMINI_REQUEST_TIMEOUT_MS,
-      "Gemini request timed out."
-    );
-    const functionCalls = (response as any).functionCalls || [];
+    const response = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'chat',
+        message: addInferredNameContext(message),
+        history: clientHistory,
+        systemInstruction,
+      }),
+    });
 
-    if (functionCalls && functionCalls.length > 0) {
+    const data = await response.json().catch(() => null);
+
+    if (!response.ok) {
+      if (response.status === 503 || data?.disabled) {
+        return { text: 'Please connect an API key to chat!' };
+      }
+      return { text: data?.error || data?.text || 'The AI service encountered an issue. Please try again in a moment.' };
+    }
+
+    if (Array.isArray(data?.history)) {
+      clientHistory = data.history;
+    }
+
+    if (data?.functionCall) {
       return {
-        functionCall: functionCalls[0],
-        text: "One moment, I'm preparing your message for Ruiping..."
+        functionCall: data.functionCall,
+        text: data.text || "One moment, I'm preparing your message for Ruiping...",
       };
     }
 
-    return { text: (response as any).text };
+    return { text: data?.text || "I couldn't generate a response just now. Please try again in a moment." };
   } catch (error) {
-    console.error("Gemini API Error:", error);
-    return { text: getGeminiErrorMessage(error) };
+    console.error('Chat request failed:', error);
+    return { text: 'I hit a technical snag connecting to the assistant. Please try again shortly.' };
   }
 };
 
-export const sendToolResponse = async (callId: string, result: any): Promise<any> => {
-  if (!chatSession) return { text: "Could not complete the process. Please try again." };
-
+export const sendToolResponse = async (_callId: string, result: any): Promise<any> => {
   try {
-    const response = await withTimeout(
-      (chatSession as any).sendMessage({
-        message: {
-          role: 'tool',
-          parts: [{
-            functionResponse: {
-              name: 'delegate_to_owner',
-              response: result
-            }
-          }]
-        }
+    const response = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'toolResponse',
+        toolResponse: result,
+        history: clientHistory,
+        systemInstruction: currentInstructionChecksum,
       }),
-      GEMINI_REQUEST_TIMEOUT_MS,
-      "Gemini tool response timed out."
-    );
+    });
 
-    return { text: (response as any).text };
+    const data = await response.json().catch(() => null);
+
+    if (!response.ok) {
+      return {
+        text: `I sent the message, but had trouble confirming it. Rest assured, Ruiping has received your message!`,
+      };
+    }
+
+    if (Array.isArray(data?.history)) {
+      clientHistory = data.history;
+    }
+
+    return { text: data?.text || 'Ruiping has been notified and can reply by email.' };
   } catch (error) {
-    console.error("Tool Response Error:", error);
-    const errorDetail = getGeminiErrorMessage(error);
-    return { text: `I sent the email, but had trouble confirming it. (${errorDetail}) Rest assured, Ruiping has received your message!` };
+    console.error('Tool Response Error:', error);
+    return {
+      text: `I sent the message, but had trouble confirming it. Rest assured, Ruiping has received your message!`,
+    };
   }
 };
