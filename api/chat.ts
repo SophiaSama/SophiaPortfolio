@@ -111,6 +111,7 @@ const handleChatRequest = async (request: Request): Promise<Response> => {
   }
 
   const apiKey = process.env.GEMINI_API_KEY || process.env.API_KEY;
+  const model = process.env.GEMINI_MODEL || 'gemini-3.8-flash';
   if (!apiKey) {
     return json(
       {
@@ -140,7 +141,7 @@ const handleChatRequest = async (request: Request): Promise<Response> => {
 
       const response = await withTimeout(
         client.models.generateContent({
-          model: 'gemini-2.5-flash',
+          model,
           contents: `Parse the following resume markdown into a JSON object matching this schema. Focus on extracting the Projects, Hero Title, Hero Subtitle, and Contact info.
       
       Resume Content:
@@ -186,7 +187,7 @@ const handleChatRequest = async (request: Request): Promise<Response> => {
     if (action === 'toolResponse') {
       const { toolResponse, toolName = 'delegate_to_owner', history = [], systemInstruction } = body;
       const chat = client.chats.create({
-        model: 'gemini-2.5-flash',
+        model,
         history: Array.isArray(history) && history.length > 0 ? history : undefined,
         config: {
           systemInstruction: systemInstruction || undefined,
@@ -227,7 +228,7 @@ const handleChatRequest = async (request: Request): Promise<Response> => {
     }
 
     const chat = client.chats.create({
-      model: 'gemini-2.5-flash',
+      model,
       history: Array.isArray(history) && history.length > 0 ? history : undefined,
       config: {
         systemInstruction: systemInstruction || undefined,
