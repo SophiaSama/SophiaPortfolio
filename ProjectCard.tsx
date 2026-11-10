@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ExternalLink, Github, Terminal, ImageOff } from 'lucide-react';
-import { Project } from '../types';
+import { Project } from './types';
 
 interface ProjectCardProps {
   project: Project;
