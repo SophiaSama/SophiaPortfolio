@@ -38,25 +38,70 @@ export const DEFAULT_PORTFOLIO_DATA: PortfolioData = {
       ]
     },
     {
-      id: "birs",
-      title: "AEO Brand Integrity Robustness Suite (BIRS)",
+      id: "agent-skills-usage-tracking",
+      title: "Agent Skill Usage Tracker",
       description:
-        "Sandboxed LLM evaluation framework that tests how AI answer engines respond to adversarial brand data.",
+        "Local-only observability tool that tracks which skills coding agents load across sessions to identify unused tools.",
       longDescription:
-        "BIRS is a security research tool that creates isolated sandboxes to probe how large language models " +
-        "and AI answer engines handle poisoned or adversarially manipulated brand information. " +
-        "Runs entirely on local LLMs to prevent contaminating production models during testing. " +
-        "Designed for brands and AI teams who need to audit the robustness of their AI-facing content.",
-      tags: ["Python", "Local LLMs", "AI Security", "LLM Evaluation", "Prompt Engineering"],
+        "A privacy-focused, local-only developer tool that monitors skill and tool utilization across coding agents " +
+        "including GitHub Copilot, Claude Code, Antigravity, Pi Agent, Hermes Agent, and Codex. " +
+        "Features dual-path ingestion via non-blocking real-time hooks and historical transcript synchronization, " +
+        "multi-strategy detection, and an interactive standalone HTML dashboard to audit and prune unused skills.",
+      tags: ["Python", "AI Agents", "Observability", "SQLite", "Analytics", "Developer Tools"],
       imageUrl:
-        "https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?q=80&w=2670&auto=format&fit=crop",
-      githubUrl: "https://github.com/SophiaSama",
+        "https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=2670&auto=format&fit=crop",
+      githubUrl: "https://github.com/SophiaSama/agent-skills-usage-tracking",
       features: [
-        "Isolated sandboxed evaluation environment — no contamination of public models",
-        "Adversarial prompt injection testing against brand content",
-        "Local LLM runner (Ollama-compatible) for fully offline evaluation",
-        "Configurable test suite with scoring and reporting",
-        "Applicable to AEO, SEO, and AI content integrity audits"
+        "Multi-agent support across GitHub Copilot, Claude Code, Antigravity, Pi Agent, Hermes Agent, and Codex",
+        "Dual-path ingestion via non-blocking live lifecycle hooks and historical transcript log synchronization",
+        "Multi-strategy skill detection via SKILL.md reads, user slash commands, tool invocations, and session baselines",
+        "Interactive standalone HTML dashboard to inspect skill usage frequency and clean up unobserved skills",
+        "Privacy-preserving architecture running 100% locally with zero external network or cloud dependencies"
+      ]
+    },
+    {
+      id: "meeting-notes-generator",
+      title: "Meeting Notes Helper",
+      description:
+        "Multimodal meeting intelligence pipeline transforming video recordings and transcripts into structured minutes, visual reports, and interactive Q&A.",
+      longDescription:
+        "A local Gradio application and Model Context Protocol (MCP) server that ingests meeting video recordings or text transcripts " +
+        "to produce structured Markdown minutes, visual HTML reports, and interactive Q&A grounded in transcript evidence. " +
+        "Features concurrent OCR video frame extraction and audio transcription, overlap-aware chunking, map-reduce summarization, " +
+        "and deep reasoning model integration.",
+      tags: ["Python", "FastMCP", "Gemini", "OpenAI", "Gradio", "Docker", "Multimodal", "OCR"],
+      imageUrl:
+        "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=2670&auto=format&fit=crop",
+      githubUrl: "https://github.com/SophiaSama/meeting-notes-generator",
+      features: [
+        "Multimodal video and transcript ingestion with automatic slide extraction and concurrent OCR text recognition",
+        "Native Google GenAI audio transcription (Gemini 3.5 with diarization) and OpenAI-compatible speech endpoints",
+        "Interactive meeting Q&A chatbot grounded in minutes, per-frame OCR metadata, and transcript evidence",
+        "Scalable map-reduce summarization pipeline with sync execution and OpenAI Batch API support",
+        "First-class Model Context Protocol (MCP) server providing stdio and SSE transports for AI assistants",
+        "Production-ready Docker containerization with multi-stage uv caching and GitHub Actions CI"
+      ]
+    },
+    {
+      id: "Manufacturing-Assistant-Agent-Framework",
+      title: "Manufacturing Assistant Agent Framework",
+      description:
+        "Production-grade, role-aware agentic decision support framework for manufacturing featuring LangGraph orchestration and deterministic RAG.",
+      longDescription:
+        "An enterprise agentic decision support framework engineered for mission-critical manufacturing operations (Apex Automotive flagship benchmark). " +
+        "Features domain-adaptive LangGraph state machine orchestration, AST-validated text-to-SQL execution via SQLGlot, " +
+        "multi-format document ingestion, GraphRAG hybrid retrieval, System One semantic reranking, and human-in-the-loop (HITL) safety policy gates.",
+      tags: ["Python", "LangGraph", "LangChain", "RAG", "GraphRAG", "SQLGlot", "FastAPI", "Enterprise AI"],
+      imageUrl:
+        "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?q=80&w=2670&auto=format&fit=crop",
+      githubUrl: "https://github.com/SophiaSama/Manufacturing-Assistant-Agent-Framework",
+      features: [
+        "Domain-adaptive LangGraph state machine orchestration with declarative domain packs and HITL policy gates",
+        "AST-validated read-only text-to-SQL engine via SQLGlot and SQLite adapter preventing injection risks",
+        "Multi-format document ingestion pipeline for SOPs, machine specs, and fault codes with path-based RBAC clearance",
+        "Hybrid GraphRAG retrieval combining vector search, NetworkX knowledge graph BFS, and semantic reranking",
+        "Multi-tier caching, Headroom context compression, and OpenTelemetry distributed tracing and token telemetry",
+        "Automated evaluation suite with deterministic grounding verification, DeepEval metrics, and multi-model arena"
       ]
     },
     {
